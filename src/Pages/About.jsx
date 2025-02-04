@@ -178,8 +178,8 @@ const AboutPage = () => {
 
             <div className="flex flex-col lg:flex-row items-center lg:items-start gap-4 lg:gap-4 lg:px-0 w-full">
               <a
-                // href="https://drive.google.com/file/d/13lmMQiHJQnNq7UfE1AskduDuZrLbIW38/view?usp=drive_link"
-                href="/files/CV.pdf"
+                href="https://drive.google.com/file/d/13lmMQiHJQnNq7UfE1AskduDuZrLbIW38/view?usp=drive_link"
+                // href="/files/CV.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full lg:w-auto"
