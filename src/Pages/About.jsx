@@ -81,7 +81,7 @@ const StatCard = memo(({ icon: Icon, color, value, label, description, animation
 ));
 
 const AboutPage = () => {
-  const TotalProjects = 56;
+  const TotalProjects = 58;
   const experience = 3; //years
   const certificates = 4; 
   // Memoized calculations
