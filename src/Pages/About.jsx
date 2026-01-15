@@ -83,7 +83,7 @@ const StatCard = memo(({ icon: Icon, color, value, label, description, animation
 const AboutPage = () => {
   const TotalProjects = 58;
   const experience = 3; //years
-  const certificates = 4; 
+  const certificates = 4;
   // Memoized calculations
   const { totalProjects, totalCertificates, YearExperience } = useMemo(() => {
     // const storedProjects = JSON.parse(localStorage.getItem("projects") || "[]");
@@ -172,9 +172,8 @@ const AboutPage = () => {
             </h2>
 
             <p className="text-base sm:text-lg lg:text-xl text-gray-400 leading-relaxed text-justify pb-4 sm:pb-0" data-aos="fade-right" data-aos-duration="1500">
-              I have a Bachelor's degree in Informatics Engineering from Ahmad Dahlan University, Yogyakarta. I have the ability to create various programs or applications based on Web and Mobile. I also have the ability to design various
-              kinds of media such as banners, packaging, and social media promotion designs and edit videos. I master programming software such as Visual Studio Code, Android Studio, Sublime Text. As well as design software such as
-              Photoshop, Corel Draw, and Adobe Primere very well.
+              I am a developer, programmer, IT Support with over 2 years of experience in developing and managing various web projects. Skilled in modern web technologies and passionate about continuously learning and adapting to the latest
+              industry developments. I am seeking an opportunity to join a dynamic team where I can contribute my technical expertise and further develop as a professional.
             </p>
 
             <div className="flex flex-col lg:flex-row items-center lg:items-start gap-4 lg:gap-4 lg:px-0 w-full">
