@@ -143,7 +143,7 @@ const Home = () => {
 
   // Lottie configuration
   const lottieOptions = {
-    src: "https://lottie.host/58753882-bb6a-49f5-a2c0-950eda1e135a/NLbpVqGegK.lottie",
+    src: `${import.meta.env.BASE_URL}Coding.json`,
     loop: true,
     autoplay: true,
     rendererSettings: {
@@ -161,8 +161,8 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-[#030014] overflow-hidden" id="Home">
       <div className={`relative z-10 transition-all duration-1000 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
-        <div className="container mx-auto px-[5%] sm:px-6 lg:px-[0%] min-h-screen">
-          <div className="flex flex-col lg:flex-row items-center justify-center h-screen md:justify-between gap-0 sm:gap-12 lg:gap-20">
+        <div className="container mx-auto px-[5%] sm:px-6 lg:px-12 min-h-screen flex flex-col justify-center pt-24 md:pt-32 pb-12">
+          <div className="flex flex-col lg:flex-row items-center justify-center lg:justify-between w-full gap-0 sm:gap-12 lg:gap-20">
             {/* Left Column */}
             <div className="w-full lg:w-1/2 space-y-6 sm:space-y-8 text-left lg:text-left order-1 lg:order-1 lg:mt-0" data-aos="fade-right" data-aos-delay="200">
               <div className="space-y-4 sm:space-y-6">
