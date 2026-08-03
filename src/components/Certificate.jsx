@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Modal, IconButton, Box, Backdrop } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
@@ -14,9 +14,12 @@ const Certificate = ({ ImgSertif }) => {
           overflow: "hidden",
           border: "1px solid var(--color-border)",
           bgcolor: "var(--color-surface)",
-          transition: "border-color 0.2s ease-out",
+          clipPath:
+            "polygon(0 10px, 10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px))",
+          transition: "border-color 0.15s ease-out, box-shadow 0.15s ease-out",
           "&:hover": {
             borderColor: "var(--color-accent)",
+            boxShadow: "var(--shadow-neon)",
             "& .overlay": { opacity: 1 },
           },
         }}

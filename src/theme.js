@@ -8,16 +8,16 @@ export function getStoredTheme() {
 
 export function applyTheme(theme) {
   const root = document.documentElement;
-  const bg = theme === "dark" ? "#09090b" : "#fafafa";
+  const bg = theme === "dark" ? "#0a0a0f" : "#f2f4f7";
   if (theme === "dark") root.classList.add("dark");
   else root.classList.remove("dark");
   root.style.colorScheme = theme;
   root.style.backgroundColor = bg;
   if (document.body) document.body.style.backgroundColor = bg;
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute("content", theme === "dark" ? "#09090B" : "#FAFAFA");
+  if (meta) meta.setAttribute("content", theme === "dark" ? "#0a0a0f" : "#f2f4f7");
   const navMeta = document.getElementById("meta-nav-color");
-  if (navMeta) navMeta.setAttribute("content", theme === "dark" ? "#09090B" : "#FAFAFA");
+  if (navMeta) navMeta.setAttribute("content", theme === "dark" ? "#0a0a0f" : "#f2f4f7");
   localStorage.setItem(STORAGE_KEY, theme);
 }
 
@@ -37,5 +37,5 @@ export function getAccentColor() {
   const value = getComputedStyle(document.documentElement)
     .getPropertyValue("--color-accent")
     .trim();
-  return value || "#1D4ED8";
+  return value || "#00a85a";
 }

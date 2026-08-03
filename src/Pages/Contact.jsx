@@ -1,15 +1,16 @@
-import React, { useState } from "react";
-import { Share2, User, Mail, MessageSquare, Send } from "lucide-react";
+import { useState } from "react";
+import { Share2, Send } from "lucide-react";
 import SocialLinks from "../components/SocialLinks";
 import Komentar from "../components/Commentar";
 import Swal from "sweetalert2";
 import { getAccentColor } from "../theme";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
+import Input from "../components/ui/Input";
+import MotionSection from "../components/MotionSection";
 
 const FORMSUBMIT_ENDPOINT =
   "https://formsubmit.co/ajax/wahyu.oktavian231@gmail.com";
-
-const fieldClass =
-  "w-full p-4 pl-12 bg-background border border-border placeholder:text-muted text-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-colors duration-200 hover:border-accent disabled:opacity-50";
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -92,100 +93,86 @@ const ContactPage = () => {
 
   return (
     <div className="bg-background" id="Contact">
-      <div className="text-center lg:mt-[5%] mt-10 mb-2 sm:px-0 px-[5%]">
-        <h2
-          data-aos="fade-up"
-          data-aos-duration="1000"
-          className="font-heading text-3xl md:text-5xl font-semibold text-foreground text-center mx-auto"
-        >
+      <MotionSection className="text-center lg:mt-[5%] mt-10 mb-2 sm:px-0 px-[5%]">
+        <h2 className="font-heading text-3xl md:text-5xl font-semibold uppercase tracking-wide text-foreground text-center mx-auto">
           Contact Me
         </h2>
-        <p
-          data-aos="fade-up"
-          data-aos-duration="1100"
-          className="text-muted max-w-2xl mx-auto text-sm md:text-base mt-2"
-        >
+        <p className="font-label uppercase tracking-[0.15em] text-muted max-w-2xl mx-auto text-xs md:text-sm mt-2">
           Got a question? Send me a message, and I&apos;ll get back to you soon.
         </p>
-      </div>
+      </MotionSection>
 
       <div className="h-auto py-10 flex items-center justify-center px-[5%] md:px-0">
         <div className="container px-[1%] grid grid-cols-1 lg:grid-cols-[45%_55%] 2xl:grid-cols-[35%_65%] gap-12">
-          <div
-            data-aos="fade-up"
-            data-aos-duration="1200"
-            className="bg-surface border border-border p-5 py-10 sm:p-10"
-          >
+          <MotionSection delay={0.05}>
+            <Card variant="terminal" className="p-5 py-10 sm:p-10">
             <div className="flex justify-between items-start mb-8">
               <div>
-                <h2 className="font-heading text-4xl font-semibold mb-3 text-foreground">
+                <h2 className="font-heading text-3xl sm:text-4xl font-semibold uppercase tracking-wide mb-3 text-foreground">
                   Get in Touch
                 </h2>
-                <p className="text-muted">
+                <p className="text-muted tracking-wide">
                   Have something to discuss? Send me a message and let&apos;s
                   talk.
                 </p>
               </div>
-              <Share2 className="w-10 h-10 text-accent opacity-50" />
+              <Share2
+                className="w-10 h-10 text-accent opacity-50"
+                strokeWidth={1.5}
+              />
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-              <div className="relative group">
-                <User className="absolute left-4 top-4 w-5 h-5 text-muted group-focus-within:text-accent transition-colors" />
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Your Name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  disabled={isSubmitting}
-                  className={fieldClass}
-                  required
-                />
-              </div>
-              <div className="relative group">
-                <Mail className="absolute left-4 top-4 w-5 h-5 text-muted group-focus-within:text-accent transition-colors" />
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Your Email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  disabled={isSubmitting}
-                  className={fieldClass}
-                  required
-                />
-              </div>
-              <div className="relative group">
-                <MessageSquare className="absolute left-4 top-4 w-5 h-5 text-muted group-focus-within:text-accent transition-colors" />
-                <textarea
-                  name="message"
-                  placeholder="Your Message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  disabled={isSubmitting}
-                  className={`${fieldClass} resize-none h-[9.9rem]`}
-                  required
-                />
-              </div>
-              <button
-                type="submit"
+              <Input
+                type="text"
+                name="name"
+                placeholder="Your Name"
+                value={formData.name}
+                onChange={handleChange}
                 disabled={isSubmitting}
-                className="w-full bg-accent text-on-accent py-4 font-semibold transition-opacity duration-200 hover:opacity-90 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                required
+              />
+              <Input
+                type="email"
+                name="email"
+                placeholder="Your Email"
+                value={formData.email}
+                onChange={handleChange}
+                disabled={isSubmitting}
+                required
+              />
+              <Input
+                as="textarea"
+                name="message"
+                placeholder="Your Message"
+                value={formData.message}
+                onChange={handleChange}
+                disabled={isSubmitting}
+                className="h-[9.9rem]"
+                required
+              />
+              <Button
+                type="submit"
+                variant="glitch"
+                disabled={isSubmitting}
+                className="w-full"
               >
-                <Send className="w-5 h-5" />
+                <Send className="w-5 h-5" strokeWidth={1.5} />
                 {isSubmitting ? "Sending..." : "Send Message"}
-              </button>
+              </Button>
             </form>
 
             <div className="mt-10 pt-6 border-t border-border flex justify-center">
               <SocialLinks />
             </div>
-          </div>
+            </Card>
+          </MotionSection>
 
-          <div className="bg-surface border border-border p-3 md:p-10 md:py-8">
-            <Komentar />
-          </div>
+          <MotionSection delay={0.15}>
+            <Card className="p-3 md:p-10 md:py-8">
+              <Komentar />
+            </Card>
+          </MotionSection>
         </div>
       </div>
     </div>

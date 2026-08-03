@@ -14,6 +14,18 @@ const flipped = toggleTheme();
 console.assert(flipped === "light", "toggle dark→light");
 console.assert(!document.documentElement.classList.contains("dark"), "toggle cleared dark");
 
+applyTheme("dark");
+const accent = getComputedStyle(document.documentElement)
+  .getPropertyValue("--color-accent")
+  .trim();
+console.assert(accent === "#00ff88", "dark accent cyber green");
+
+applyTheme("light");
+const lightAccent = getComputedStyle(document.documentElement)
+  .getPropertyValue("--color-accent")
+  .trim();
+console.assert(lightAccent === "#00a85a", "light accent washed green");
+
 if (original === "dark" || original === "light") {
   applyTheme(original);
 } else {

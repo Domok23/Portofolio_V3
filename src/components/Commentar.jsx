@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, memo } from "react";
+import { useState, useEffect, useRef, useCallback, memo } from "react";
 import {
   addDoc,
   collection,
@@ -15,9 +15,11 @@ import {
   AlertCircle,
   Send,
 } from "lucide-react";
+import Button from "./ui/Button";
+import Input from "./ui/Input";
 
 const Comment = memo(({ comment, formatDate }) => (
-  <div className="px-4 pt-4 pb-2 border border-border bg-background hover:border-accent transition-colors duration-200">
+  <div className="px-4 pt-4 pb-2 border border-border bg-background cyber-chamfer-sm hover:border-accent hover:shadow-neon-sm transition-all duration-150">
     <div className="flex items-start gap-3">
       {comment.profileImage ? (
         <img
@@ -28,7 +30,7 @@ const Comment = memo(({ comment, formatDate }) => (
         />
       ) : (
         <div className="p-2 border border-border text-accent">
-          <UserCircle2 className="w-5 h-5" />
+          <UserCircle2 className="w-5 h-5" strokeWidth={1.5} />
         </div>
       )}
       <div className="flex-grow min-w-0">
@@ -36,11 +38,11 @@ const Comment = memo(({ comment, formatDate }) => (
           <h4 className="font-medium text-foreground truncate">
             {comment.userName}
           </h4>
-          <span className="text-xs text-muted whitespace-nowrap">
+          <span className="font-label text-xs uppercase tracking-wider text-muted whitespace-nowrap">
             {formatDate(comment.createdAt)}
           </span>
         </div>
-        <p className="text-muted text-sm break-words leading-relaxed">
+        <p className="text-muted text-sm break-words leading-relaxed tracking-wide">
           {comment.content}
         </p>
       </div>
@@ -77,37 +79,38 @@ const CommentForm = memo(({ onSubmit, isSubmitting }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-foreground">
-          Name <span className="text-red-500">*</span>
+        <label className="block font-label text-sm uppercase tracking-wider text-foreground">
+          Name <span className="text-destructive">*</span>
         </label>
-        <input
+        <Input
           type="text"
           value={userName}
           onChange={(e) => setUserName(e.target.value)}
           placeholder="Enter your name"
-          className="w-full p-3 bg-background border border-border text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ring transition-colors duration-200"
           required
         />
       </div>
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-foreground">
-          Message <span className="text-red-500">*</span>
+        <label className="block font-label text-sm uppercase tracking-wider text-foreground">
+          Message <span className="text-destructive">*</span>
         </label>
-        <textarea
+        <Input
+          as="textarea"
           ref={textareaRef}
           value={newComment}
           onChange={handleTextareaChange}
           placeholder="Write your message here..."
-          className="w-full p-4 bg-background border border-border text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ring transition-colors duration-200 resize-none min-h-[120px]"
+          className="min-h-[120px]"
           required
         />
       </div>
 
-      <button
+      <Button
         type="submit"
+        variant="glitch"
         disabled={isSubmitting}
-        className="w-full h-12 bg-accent text-on-accent font-medium transition-opacity duration-200 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
+        className="w-full"
       >
         {isSubmitting ? (
           <>
@@ -116,11 +119,11 @@ const CommentForm = memo(({ onSubmit, isSubmitting }) => {
           </>
         ) : (
           <>
-            <Send className="w-4 h-4" />
+            <Send className="w-4 h-4" strokeWidth={1.5} />
             <span>Post Comment</span>
           </>
         )}
-      </button>
+      </Button>
     </form>
   );
 });
@@ -185,18 +188,18 @@ const Komentar = () => {
     <div>
       <div className="p-6 border-b border-border">
         <div className="flex items-center gap-3">
-          <div className="p-2 border border-border">
-            <MessageCircle className="w-6 h-6 text-accent" />
+          <div className="p-2 border border-border hover:shadow-neon-sm">
+            <MessageCircle className="w-6 h-6 text-accent" strokeWidth={1.5} />
           </div>
-          <h3 className="text-xl font-heading font-semibold text-foreground">
+          <h3 className="text-xl font-heading font-semibold uppercase tracking-wide text-foreground">
             Comments <span className="text-accent">({comments.length})</span>
           </h3>
         </div>
       </div>
       <div className="p-6 space-y-6">
         {error && (
-          <div className="flex items-center gap-2 p-4 text-red-600 bg-red-500/10 border border-red-500/20">
-            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <div className="flex items-center gap-2 p-4 text-destructive bg-destructive/10 border border-destructive/30">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" strokeWidth={1.5} />
             <p className="text-sm">{error}</p>
           </div>
         )}
@@ -209,8 +212,8 @@ const Komentar = () => {
         <div className="space-y-4 h-[300px] overflow-y-auto">
           {comments.length === 0 ? (
             <div className="text-center py-8">
-              <UserCircle2 className="w-12 h-12 text-muted mx-auto mb-3 opacity-50" />
-              <p className="text-muted">
+              <UserCircle2 className="w-12 h-12 text-muted mx-auto mb-3 opacity-50" strokeWidth={1.5} />
+              <p className="text-muted font-label uppercase tracking-wider text-sm">
                 No comments yet. Start the conversation!
               </p>
             </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X, Sun, Moon } from "lucide-react";
 import { getStoredTheme, toggleTheme } from "../theme";
 
@@ -12,12 +12,12 @@ const ThemeToggle = ({ theme, onToggle }) => (
     aria-label={
       theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
     }
-    className={`p-2 min-h-11 min-w-11 inline-flex items-center justify-center text-foreground hover:text-accent transition-colors duration-200 cursor-pointer ${focusRing}`}
+    className={`p-2 min-h-11 min-w-11 inline-flex items-center justify-center border border-border text-foreground hover:border-accent hover:text-accent hover:shadow-neon-sm transition-all duration-150 cursor-pointer cyber-chamfer-sm ${focusRing}`}
   >
     {theme === "dark" ? (
-      <Sun className="w-5 h-5" />
+      <Sun className="w-5 h-5" strokeWidth={1.5} />
     ) : (
-      <Moon className="w-5 h-5" />
+      <Moon className="w-5 h-5" strokeWidth={1.5} />
     )}
   </button>
 );
@@ -96,8 +96,10 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed w-full top-0 z-50 border-b border-border transition-colors duration-200 ${
-        isOpen || scrolled ? "bg-background" : "bg-background/90"
+      className={`fixed w-full top-0 z-50 border-b border-border backdrop-blur-sm transition-all duration-150 ${
+        isOpen || scrolled
+          ? "bg-background/95 shadow-neon-sm"
+          : "bg-background/90"
       }`}
     >
       <div className="mx-auto px-4 sm:px-6 lg:px-[10%]">
@@ -106,7 +108,7 @@ const Navbar = () => {
             <a
               href="#Home"
               onClick={(e) => scrollToSection(e, "#Home")}
-              className={`text-xl font-heading font-semibold text-foreground cursor-pointer ${focusRing}`}
+              className={`font-heading text-lg uppercase tracking-widest text-accent cursor-pointer ${focusRing}`}
             >
               Domm.
             </a>
@@ -118,19 +120,19 @@ const Navbar = () => {
                 key={item.label}
                 href={item.href}
                 onClick={(e) => scrollToSection(e, item.href)}
-                className={`group relative px-1 py-2 text-sm font-medium cursor-pointer ${focusRing}`}
+                className={`group relative px-1 py-2 font-label text-sm uppercase tracking-[0.15em] cursor-pointer ${focusRing}`}
               >
                 <span
-                  className={`relative z-10 transition-colors duration-200 ${
+                  className={`relative z-10 transition-colors duration-150 ${
                     activeSection === item.href.substring(1)
-                      ? "text-accent font-semibold"
+                      ? "text-accent"
                       : "text-muted group-hover:text-foreground"
                   }`}
                 >
                   {item.label}
                 </span>
                 <span
-                  className={`absolute bottom-0 left-0 w-full h-0.5 bg-accent transform origin-left transition-transform duration-200 ${
+                  className={`absolute bottom-0 left-0 w-full h-0.5 bg-accent shadow-neon-sm transform origin-left transition-transform duration-150 ${
                     activeSection === item.href.substring(1)
                       ? "scale-x-100"
                       : "scale-x-0 group-hover:scale-x-100"
@@ -147,16 +149,20 @@ const Navbar = () => {
               type="button"
               onClick={() => setIsOpen(!isOpen)}
               aria-label={isOpen ? "Close menu" : "Open menu"}
-              className={`relative p-2 min-h-11 min-w-11 inline-flex items-center justify-center text-foreground transition-transform duration-200 cursor-pointer ${focusRing}`}
+              className={`relative p-2 min-h-11 min-w-11 inline-flex items-center justify-center border border-border text-foreground hover:border-accent hover:text-accent transition-all duration-150 cursor-pointer cyber-chamfer-sm ${focusRing}`}
             >
-              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isOpen ? (
+                <X className="w-6 h-6" strokeWidth={1.5} />
+              ) : (
+                <Menu className="w-6 h-6" strokeWidth={1.5} />
+              )}
             </button>
           </div>
         </div>
       </div>
 
       <div
-        className={`md:hidden fixed inset-x-0 bg-background border-b border-border transition-all duration-200 ease-in-out ${
+        className={`md:hidden fixed inset-x-0 bg-background border-b border-border cyber-chamfer-sm transition-all duration-150 ease-in-out ${
           isOpen
             ? "opacity-100 translate-y-0"
             : "opacity-0 -translate-y-4 pointer-events-none"
@@ -169,9 +175,9 @@ const Navbar = () => {
               key={item.label}
               href={item.href}
               onClick={(e) => scrollToSection(e, item.href)}
-              className={`block px-4 py-3 text-lg font-medium min-h-11 transition-colors duration-200 cursor-pointer ${focusRing} ${
+              className={`block px-4 py-3 font-label text-base uppercase tracking-[0.15em] min-h-11 transition-colors duration-150 cursor-pointer ${focusRing} ${
                 activeSection === item.href.substring(1)
-                  ? "text-accent font-semibold"
+                  ? "text-accent"
                   : "text-muted hover:text-foreground"
               }`}
             >

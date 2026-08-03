@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { db, collection } from "../firebase";
 import { getDocs } from "firebase/firestore";
 import PropTypes from "prop-types";
@@ -10,14 +10,12 @@ import CardProject from "../components/CardProject";
 import TechStackIcon from "../components/TechStackIcon";
 import Certificate from "../components/Certificate";
 import { Code, Award, Boxes } from "lucide-react";
+import MotionSection from "../components/MotionSection";
+import Button from "../components/ui/Button";
 
 // Separate ShowMore/ShowLess button component
 const ToggleButton = ({ onClick, isShowingMore }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className="px-3 py-1.5 text-sm font-medium border border-border text-foreground hover:border-accent hover:text-accent transition-colors duration-200 cursor-pointer inline-flex items-center gap-2"
-  >
+  <Button variant="outline" onClick={onClick} className="cyber-hover-glitch">
     {isShowingMore ? "See Less" : "See More"}
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -34,7 +32,7 @@ const ToggleButton = ({ onClick, isShowingMore }) => (
         points={isShowingMore ? "18 15 12 9 6 15" : "6 9 12 15 18 9"}
       ></polyline>
     </svg>
-  </button>
+  </Button>
 );
 
 function TabPanel({ children, value, index, ...other }) {
@@ -163,24 +161,21 @@ export default function FullWidthTabs() {
 
   return (
     <div
-      className="md:px-[10%] px-[5%] w-full sm:mt-0 mt-[3rem] bg-background"
+      className="md:px-[10%] px-[5%] w-full sm:mt-0 mt-[3rem] bg-background cyber-grid"
       id="Portofolio"
     >
-      <div
-        className="text-center pb-10"
-        data-aos="fade-up"
-        data-aos-duration="1000"
-      >
-        <h2 className="font-heading text-3xl md:text-5xl font-semibold text-foreground text-center mx-auto">
+      <MotionSection className="text-center pb-10">
+        <h2 className="font-heading text-3xl md:text-5xl font-semibold uppercase tracking-wide text-foreground text-center mx-auto">
           Portfolio Showcase
         </h2>
-        <p className="text-muted max-w-2xl mx-auto text-sm md:text-base mt-2">
+        <p className="text-muted max-w-2xl mx-auto text-sm md:text-base mt-2 tracking-wide">
           Explore my journey through projects, certifications, and technical
           expertise. Each section represents a milestone in my continuous
           learning path.
         </p>
-      </div>
+      </MotionSection>
 
+      <MotionSection delay={0.1}>
       <Box sx={{ width: "100%" }}>
         <AppBar
           position="static"
@@ -205,12 +200,15 @@ export default function FullWidthTabs() {
             sx={{
               minHeight: "70px",
               color: "var(--color-foreground)",
+              fontFamily: '"Share Tech Mono", monospace',
               "& .MuiTab-root": {
-                fontSize: { xs: "0.9rem", md: "1rem" },
-                fontWeight: "600",
+                fontSize: { xs: "0.75rem", md: "0.875rem" },
+                fontWeight: "500",
+                fontFamily: '"Share Tech Mono", monospace',
+                letterSpacing: "0.15em",
                 color: "var(--color-muted)",
-                textTransform: "none",
-                transition: "color 0.2s ease-out",
+                textTransform: "uppercase",
+                transition: "color 0.15s ease-out",
                 padding: "20px 0",
                 zIndex: 1,
                 margin: "8px",
@@ -223,6 +221,7 @@ export default function FullWidthTabs() {
                   color: "var(--color-accent)",
                   background: "transparent",
                   boxShadow: "none",
+                  textShadow: "0 0 8px var(--color-accent)",
                   "& .lucide": {
                     color: "var(--color-accent)",
                   },
@@ -230,6 +229,7 @@ export default function FullWidthTabs() {
               },
               "& .MuiTabs-indicator": {
                 height: "2px",
+                boxShadow: "0 0 8px var(--color-accent)",
               },
               "& .MuiTabs-flexContainer": {
                 gap: "8px",
@@ -324,6 +324,7 @@ export default function FullWidthTabs() {
             </div>
           </TabPanel>
       </Box>
+      </MotionSection>
     </div>
   );
 }

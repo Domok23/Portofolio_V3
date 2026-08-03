@@ -3,25 +3,43 @@
 @tailwind utilities;
 
 :root {
-  --color-background: #fafafa;
-  --color-foreground: #09090b;
-  --color-muted: #71717a;
-  --color-border: #e4e4e7;
+  --color-background: #f2f4f7;
+  --color-foreground: #0a0a0f;
+  --color-muted: #5b6472;
+  --color-muted-bg: #e8ecf2;
+  --color-border: #c5cdd8;
   --color-surface: #ffffff;
-  --color-accent: #1d4ed8;
+  --color-accent: #00a85a;
+  --color-accent-secondary: #c400c4;
+  --color-accent-tertiary: #0090b3;
   --color-on-accent: #ffffff;
-  --color-ring: #18181b;
+  --color-ring: #00a85a;
+  --color-destructive: #e11d48;
+  --shadow-neon: 0 0 5px #00a85a66, 0 0 10px #00a85a33;
+  --shadow-neon-sm: 0 0 3px #00a85a55, 0 0 6px #00a85a22;
+  --shadow-neon-lg: 0 0 10px #00a85a66, 0 0 20px #00a85a40, 0 0 40px #00a85a22;
+  --shadow-neon-secondary: 0 0 5px #c400c466, 0 0 20px #c400c440;
+  --shadow-neon-tertiary: 0 0 5px #0090b366, 0 0 20px #0090b340;
 }
 
 .dark {
-  --color-background: #09090b;
-  --color-foreground: #fafafa;
-  --color-muted: #a1a1aa;
-  --color-border: #27272a;
-  --color-surface: #18181b;
-  --color-accent: #3b82f6;
-  --color-on-accent: #ffffff;
-  --color-ring: #fafafa;
+  --color-background: #0a0a0f;
+  --color-foreground: #e0e0e0;
+  --color-muted: #6b7280;
+  --color-muted-bg: #1c1c2e;
+  --color-border: #2a2a3a;
+  --color-surface: #12121a;
+  --color-accent: #00ff88;
+  --color-accent-secondary: #ff00ff;
+  --color-accent-tertiary: #00d4ff;
+  --color-on-accent: #0a0a0f;
+  --color-ring: #00ff88;
+  --color-destructive: #ff3366;
+  --shadow-neon: 0 0 5px #00ff88, 0 0 10px #00ff8840;
+  --shadow-neon-sm: 0 0 3px #00ff88, 0 0 6px #00ff8830;
+  --shadow-neon-lg: 0 0 10px #00ff88, 0 0 20px #00ff8860, 0 0 40px #00ff8830;
+  --shadow-neon-secondary: 0 0 5px #ff00ff, 0 0 20px #ff00ff60;
+  --shadow-neon-tertiary: 0 0 5px #00d4ff, 0 0 20px #00d4ff60;
 }
 
 * {
@@ -37,7 +55,7 @@ body {
   background: var(--color-background);
   background-color: var(--color-background);
   color: var(--color-foreground);
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
   scroll-behavior: smooth;
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) transparent;
@@ -54,7 +72,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: "Archivo", sans-serif;
+  font-family: "Orbitron", "Share Tech Mono", monospace;
 }
 
 ::-webkit-scrollbar {
@@ -66,47 +84,249 @@ h6 {
 }
 ::-webkit-scrollbar-thumb {
   background: var(--color-border);
-  border-radius: 4px;
+  border-radius: 0;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-muted);
 }
 
+@layer utilities {
+  .cyber-chamfer {
+    clip-path: polygon(
+      0 10px,
+      10px 0,
+      calc(100% - 10px) 0,
+      100% 10px,
+      100% calc(100% - 10px),
+      calc(100% - 10px) 100%,
+      10px 100%,
+      0 calc(100% - 10px)
+    );
+  }
+
+  .cyber-chamfer-sm {
+    clip-path: polygon(
+      0 6px,
+      6px 0,
+      calc(100% - 6px) 0,
+      100% 6px,
+      100% calc(100% - 6px),
+      calc(100% - 6px) 100%,
+      6px 100%,
+      0 calc(100% - 6px)
+    );
+  }
+
+  .cyber-scanlines {
+    position: relative;
+  }
+
+  .cyber-scanlines::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.15) 2px,
+      rgba(0, 0, 0, 0.15) 4px
+    );
+    z-index: 1;
+  }
+
+  .cyber-grid {
+    background-image:
+      linear-gradient(rgba(0, 168, 90, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 168, 90, 0.04) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+
+  .dark .cyber-grid {
+    background-image:
+      linear-gradient(rgba(0, 255, 136, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 255, 136, 0.05) 1px, transparent 1px);
+  }
+
+  .cyber-glitch {
+    position: relative;
+    text-shadow: -1px 0 #ff00ff, 1px 0 #00d4ff;
+  }
+
+  .cyber-cursor::after {
+    content: "▌";
+    margin-left: 2px;
+    color: var(--color-accent);
+  }
+
+  .cyber-scan-beam {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 160px;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      rgba(0, 168, 90, 0.22),
+      transparent
+    );
+    opacity: 0.95;
+  }
+
+  .dark .cyber-scan-beam {
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      rgba(0, 255, 136, 0.28),
+      transparent
+    );
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   a,
   button {
-    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  @keyframes fade-up {
-    from {
-      opacity: 0;
-      transform: translateY(16px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .animate-fade-up {
-    animation: fade-up 0.5s ease-out both;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .animate-fade-up {
-    animation: none;
+/* Cyber motion — always on (full-send). Windows "reduce motion" was hiding these. */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
     opacity: 1;
-    transform: none;
-  }
-
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+    transform: translateY(0);
   }
 }
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes glitch {
+  0% {
+    transform: translate(0);
+  }
+  15% {
+    transform: translate(-4px, 2px) skewX(-2deg);
+  }
+  30% {
+    transform: translate(4px, -3px) skewX(2deg);
+  }
+  45% {
+    transform: translate(-3px, -1px);
+  }
+  60% {
+    transform: translate(3px, 2px);
+  }
+  75% {
+    transform: translate(-2px, 1px) skewX(-1deg);
+  }
+  100% {
+    transform: translate(0);
+  }
+}
+
+@keyframes glitchHard {
+  0%,
+  100% {
+    transform: translate(0);
+    filter: none;
+  }
+  20% {
+    transform: translate(-4px, 1px);
+    filter: hue-rotate(20deg);
+  }
+  40% {
+    transform: translate(4px, -2px);
+  }
+  60% {
+    transform: translate(-2px, 2px);
+    filter: hue-rotate(-15deg);
+  }
+  80% {
+    transform: translate(2px, -1px);
+  }
+}
+
+@keyframes rgbShift {
+  0%,
+  100% {
+    text-shadow: -2px 0 #ff00ff, 2px 0 #00d4ff, 0 0 12px rgba(0, 255, 136, 0.55);
+  }
+  50% {
+    text-shadow: 2px 0 #ff00ff, -2px 0 #00d4ff, 0 0 18px rgba(0, 255, 136, 0.8);
+  }
+}
+
+@keyframes scanlineScroll {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+@keyframes borderHue {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(360deg);
+  }
+}
+
+@keyframes cyberFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.5s ease-out both;
+}
+
+.cyber-glitch {
+  /* Hero text only: rare chromatic pulse, no constant shake */
+  animation: rgbShift 4s ease-in-out infinite;
+  will-change: text-shadow;
+}
+
+.cyber-glitch-hard {
+  animation: glitchHard 0.45s steps(2) 1, rgbShift 0.45s linear 1;
+}
+
+.cyber-hover-glitch:hover,
+.cyber-hover-glitch:focus-visible {
+  animation: glitchHard 0.35s steps(2) 2, rgbShift 0.35s linear 2;
+}
+
+.cyber-cursor::after {
+  animation: blink 1s step-end infinite;
+}
+
+.cyber-scan-beam {
+  animation: scanlineScroll 3.2s linear infinite;
+  opacity: 1;
+  height: 160px;
+}
+
+.cyber-border-pulse {
+  animation: borderHue 8s linear infinite;
+}
+
+.cyber-float {
+  animation: cyberFloat 3s ease-in-out infinite;
+}
+

@@ -8,8 +8,8 @@
           var t = localStorage.getItem("theme");
           if (t !== "dark" && t !== "light") t = "light";
           var dark = t === "dark";
-          var bg = dark ? "#09090b" : "#fafafa";
-          var fg = dark ? "#fafafa" : "#09090b";
+          var bg = dark ? "#0a0a0f" : "#f2f4f7";
+          var fg = dark ? "#e0e0e0" : "#0a0a0f";
           var root = document.documentElement;
           root.classList.toggle("dark", dark);
           root.style.colorScheme = t;
@@ -28,7 +28,7 @@
         } catch (e) {}
       })();
     </script>
-    <meta name="theme-color" content="#FAFAFA" id="meta-theme-color" />
+    <meta name="theme-color" content="#f2f4f7" id="meta-theme-color" />
     <meta name="color-scheme" content="light dark" />
     <link rel="icon" href="/Portofolio_V3/vite.svg" type="image/svg+xml" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -37,17 +37,17 @@
     <link
       rel="preload"
       as="style"
-      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Orbitron:wght@500;600;700;900&family=Share+Tech+Mono&display=swap"
     />
     <link
-      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Orbitron:wght@500;600;700;900&family=Share+Tech+Mono&display=swap"
       rel="stylesheet"
       media="print"
       onload="this.media='all'"
     />
     <noscript>
       <link
-        href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap"
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Orbitron:wght@500;600;700;900&family=Share+Tech+Mono&display=swap"
         rel="stylesheet"
       />
     </noscript>
@@ -103,7 +103,7 @@
     />
     <meta
       name="msapplication-navbutton-color"
-      content="#FAFAFA"
+      content="#f2f4f7"
       id="meta-nav-color"
     />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -118,7 +118,7 @@
         try {
           var t = localStorage.getItem("theme");
           if (t !== "dark" && t !== "light") t = "light";
-          var bg = t === "dark" ? "#09090B" : "#FAFAFA";
+          var bg = t === "dark" ? "#0a0a0f" : "#f2f4f7";
           var themeMeta = document.getElementById("meta-theme-color");
           var navMeta = document.getElementById("meta-nav-color");
           if (themeMeta) themeMeta.setAttribute("content", bg);

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { lazy, Suspense, useEffect } from "react";
+import { MotionConfig } from "framer-motion";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import Home from "./Pages/Home";
@@ -8,21 +9,23 @@ import AnimatedBackground from "./components/Background";
 import Navbar from "./components/Navbar";
 import Portofolio from "./Pages/Portofolio";
 import ContactPage from "./Pages/Contact";
+import Scanlines from "./components/Scanlines";
+import ScrollFX from "./components/ScrollFX";
 
 const ProjectDetails = lazy(() => import("./components/ProjectDetail"));
 
 const Footer = () => (
   <footer className="border-t border-border bg-background">
     <div className="mx-auto px-[5%] py-6 text-center">
-      <span className="block text-sm text-muted">
+      <span className="block text-xs font-label uppercase tracking-[0.2em] text-muted">
         © {new Date().getFullYear()}{" "}
         <a
           href="#Home"
-          className="text-foreground hover:text-accent transition-colors duration-200"
+          className="text-foreground hover:text-accent transition-colors duration-150"
         >
           Domm™
         </a>
-        . All Rights Reserved.
+        {" // ALL RIGHTS RESERVED"}
       </span>
     </div>
   </footer>
@@ -44,7 +47,7 @@ const ProjectPageLayout = () => (
   <>
     <Suspense
       fallback={
-        <div className="min-h-screen bg-background flex items-center justify-center text-muted">
+        <div className="min-h-screen bg-background flex items-center justify-center font-label uppercase tracking-widest text-muted">
           Loading...
         </div>
       }
@@ -70,12 +73,16 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter basename="/Portofolio_V3">
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/project/:id" element={<ProjectPageLayout />} />
-      </Routes>
-    </BrowserRouter>
+    <MotionConfig reducedMotion="never">
+      <BrowserRouter basename="/Portofolio_V3">
+        <Scanlines />
+        <ScrollFX />
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/project/:id" element={<ProjectPageLayout />} />
+        </Routes>
+      </BrowserRouter>
+    </MotionConfig>
   );
 }
 

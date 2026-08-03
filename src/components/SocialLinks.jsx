@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Linkedin,
   Github,
@@ -63,25 +62,28 @@ const LinkCard = ({ link, large = false }) => (
     href={link.url}
     target="_blank"
     rel="noopener noreferrer"
-    className={`group relative flex items-center ${
+    className={`group relative flex items-center min-h-11 ${
       large ? "justify-between p-4" : "gap-3 p-4"
-    } border border-border bg-background hover:border-accent transition-colors duration-200 cursor-pointer`}
+    } border border-border bg-background cyber-chamfer-sm hover:border-accent hover:shadow-neon-sm transition-all duration-150 cursor-pointer`}
   >
     <div className="relative flex items-center gap-4">
-      <div className="p-2 border border-border text-foreground">
-        <link.icon className={large ? "w-6 h-6" : "w-5 h-5"} />
+      <div className="p-2 border border-border text-foreground group-hover:border-accent group-hover:text-accent transition-colors duration-150">
+        <link.icon
+          className={large ? "w-6 h-6" : "w-5 h-5"}
+          strokeWidth={1.5}
+        />
       </div>
 
       <div className="flex flex-col min-w-0">
         <span
           className={`${
             large ? "text-lg" : "text-sm"
-          } font-heading font-semibold text-foreground tracking-tight leading-none`}
+          } font-heading font-semibold uppercase tracking-wide text-foreground leading-none`}
         >
           {link.displayName}
         </span>
         <span
-          className={`${large ? "text-sm" : "text-xs"} text-muted truncate`}
+          className={`${large ? "text-sm" : "text-xs"} font-label text-muted truncate`}
         >
           {link.subText}
         </span>
@@ -91,7 +93,8 @@ const LinkCard = ({ link, large = false }) => (
     <ExternalLink
       className={`${
         large ? "w-5 h-5" : "w-4 h-4 ml-auto"
-      } text-muted group-hover:text-accent transition-colors duration-200`}
+      } text-muted group-hover:text-accent transition-colors duration-150`}
+      strokeWidth={1.5}
     />
   </a>
 );
@@ -102,8 +105,8 @@ const SocialLinks = () => {
 
   return (
     <div className="w-full">
-      <h3 className="text-xl font-heading font-semibold text-foreground mb-6 flex items-center gap-2">
-        <span className="inline-block w-8 h-0.5 bg-accent"></span>
+      <h3 className="text-xl font-heading font-semibold uppercase tracking-wide text-foreground mb-6 flex items-center gap-2">
+        <span className="inline-block w-8 h-0.5 bg-accent shadow-neon-sm"></span>
         Connect With Me
       </h3>
 
