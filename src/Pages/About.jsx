@@ -1,7 +1,9 @@
-import React, { useEffect, memo, useMemo } from 'react';
+import React, { useEffect, memo, useMemo, useState } from 'react';
 import { FileText, Code, Award, Globe, ArrowUpRight, Sparkles, UserCheck } from 'lucide-react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import { db } from "../firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 // Memoized Components
 const Header = memo(() => (
@@ -81,26 +83,35 @@ const StatCard = memo(({ icon: Icon, color, value, label, description, animation
 ));
 
 const AboutPage = () => {
-  const TotalProjects = 68;
-  const experience = 3; // years
-  const certificates = 4;
-  // Memoized calculations
-  const { totalProjects, totalCertificates, YearExperience } = useMemo(() => {
-    // const storedProjects = JSON.parse(localStorage.getItem("projects") || "[]");
-    // const storedCertificates = JSON.parse(localStorage.getItem('certificates') || '[]');
+  const [stats, setStats] = useState({
+    totalProjects: 68,
+    totalCertificates: 4,
+    YearExperience: 3,
+    cvUrl: "https://drive.google.com/file/d/1OaHN3hVqncJR9-7HXDh2qLbWGYN6Nabp/view?usp=drive_link",
+  });
 
-    // const startDate = new Date("2022-11-06");
-    // const today = new Date();
-    // const experience = today.getFullYear() - startDate.getFullYear() -
-    //   (today < new Date(today.getFullYear(), startDate.getMonth(), startDate.getDate()) ? 1 : 0);
-
-    return {
-      // totalProjects: storedProjects.length,
-      totalProjects: TotalProjects,
-      totalCertificates: certificates,
-      YearExperience: experience,
+  useEffect(() => {
+    const fetchProfileStats = async () => {
+      try {
+        const docRef = doc(db, "profile-info", "main");
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+          const data = snap.data();
+          setStats((prev) => ({
+            ...prev,
+            totalProjects: data.projectsCompleted || prev.totalProjects,
+            YearExperience: data.expYears || prev.YearExperience,
+            cvUrl: data.cvUrl || prev.cvUrl,
+          }));
+        }
+      } catch (e) {
+        console.error("Failed to fetch profile stats:", e);
+      }
     };
+    fetchProfileStats();
   }, []);
+
+  const { totalProjects, totalCertificates, YearExperience } = stats;
 
   // Optimized AOS initialization
   useEffect(() => {
@@ -177,8 +188,7 @@ const AboutPage = () => {
 
             <div className="flex flex-col lg:flex-row items-center lg:items-start gap-4 lg:gap-4 lg:px-0 w-full">
               <a
-                href="https://drive.google.com/file/d/1OaHN3hVqncJR9-7HXDh2qLbWGYN6Nabp/view?usp=drive_link"
-                // href="/files/CV.pdf"
+                href={stats.cvUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full lg:w-auto"

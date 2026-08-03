@@ -7,6 +7,10 @@ import Navbar from "./components/Navbar";
 import Portofolio from "./Pages/Portofolio";
 import ContactPage from "./Pages/Contact";
 import ProjectDetails from "./components/ProjectDetail";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Login from "./Pages/Admin/Login";
+import Dashboard from "./Pages/Admin/Dashboard";
 
 const LandingPage = () => (
   <>
@@ -51,12 +55,23 @@ const ProjectPageLayout = () => (
 
 function App() {
   return (
-    <BrowserRouter basename="/Portofolio_V3">
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/project/:id" element={<ProjectPageLayout />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter basename="/Portofolio_V3">
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/project/:id" element={<ProjectPageLayout />} />
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
