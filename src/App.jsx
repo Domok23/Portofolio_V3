@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import "./index.css";
 import Home from "./Pages/Home";
 import About from "./Pages/About";
@@ -56,7 +56,7 @@ const ProjectPageLayout = () => (
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter basename="/Portofolio_V3">
+      <HashRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/project/:id" element={<ProjectPageLayout />} />
@@ -70,7 +70,7 @@ function App() {
             }
           />
         </Routes>
-      </BrowserRouter>
+      </HashRouter>
     </AuthProvider>
   );
 }
