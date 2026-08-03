@@ -87,6 +87,7 @@ const AboutPage = () => {
     totalProjects: 68,
     totalCertificates: 4,
     YearExperience: 3,
+    cvUrl: "https://drive.google.com/file/d/1OaHN3hVqncJR9-7HXDh2qLbWGYN6Nabp/view?usp=drive_link",
   });
 
   useEffect(() => {
@@ -100,6 +101,7 @@ const AboutPage = () => {
             ...prev,
             totalProjects: data.projectsCompleted || prev.totalProjects,
             YearExperience: data.expYears || prev.YearExperience,
+            cvUrl: data.cvUrl || prev.cvUrl,
           }));
         }
       } catch (e) {
@@ -186,8 +188,7 @@ const AboutPage = () => {
 
             <div className="flex flex-col lg:flex-row items-center lg:items-start gap-4 lg:gap-4 lg:px-0 w-full">
               <a
-                href="https://drive.google.com/file/d/1OaHN3hVqncJR9-7HXDh2qLbWGYN6Nabp/view?usp=drive_link"
-                // href="/files/CV.pdf"
+                href={stats.cvUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full lg:w-auto"

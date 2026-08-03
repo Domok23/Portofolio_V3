@@ -3,23 +3,67 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft, ExternalLink, Github, Code2, Star,
   ChevronRight, Layers, Layout, Globe, Package, Cpu, Code,
+  Database, Server, Terminal, Flame, Smartphone, Cloud, FileCode, Wrench
 } from "lucide-react";
 import Swal from 'sweetalert2';
 import { db, doc, getDoc } from "../firebase";
 
-const TECH_ICONS = {
-  React: Globe,
-  Tailwind: Layout,
-  Express: Cpu,
-  Python: Code,
-  Javascript: Code,
-  HTML: Code,
-  CSS: Code,
-  default: Package,
+const TECH_ICONS_MAP = {
+  // Languages
+  javascript: Code,
+  js: Code,
+  typescript: Code,
+  ts: Code,
+  html: FileCode,
+  html5: FileCode,
+  css: Layout,
+  css3: Layout,
+  python: Code,
+  php: Server,
+  java: Code,
+
+  // Frameworks & Libraries
+  react: Globe,
+  reactjs: Globe,
+  nextjs: Globe,
+  vue: Globe,
+  vuejs: Globe,
+  angular: Globe,
+  laravel: Server,
+  express: Cpu,
+  expressjs: Cpu,
+  nodejs: Server,
+  node: Server,
+  tailwind: Layout,
+  tailwindcss: Layout,
+  bootstrap: Layout,
+
+  // Databases
+  mysql: Database,
+  postgresql: Database,
+  postgres: Database,
+  mongodb: Database,
+  mongo: Database,
+  firebase: Flame,
+  firestore: Flame,
+  supabase: Database,
+  sql: Database,
+
+  // Tools & Others
+  git: Terminal,
+  github: Github,
+  docker: Cloud,
+  aws: Cloud,
+};
+
+const getTechIcon = (techName) => {
+  if (!techName) return Package;
+  const key = techName.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return TECH_ICONS_MAP[key] || Package;
 };
 
 const TechBadge = ({ tech }) => {
-  const Icon = TECH_ICONS[tech] || TECH_ICONS["default"];
+  const Icon = getTechIcon(tech);
   
   return (
     <div className="group relative overflow-hidden px-3 py-2 md:px-4 md:py-2.5 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-xl border border-blue-500/10 hover:border-blue-500/30 transition-all duration-300 cursor-default">
