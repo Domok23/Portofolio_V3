@@ -13,13 +13,13 @@ import { collection, addDoc } from "@firebase/firestore";
 // };
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyBNrsJbFNJIB2iK4F9MLibddZrA75br19c',
-  authDomain: 'portofoliov5-3206b.firebaseapp.com',
-  projectId: 'portofoliov5-3206b',
-  storageBucket: 'portofoliov5-3206b.firebasestorage.app',
-  messagingSenderId: '1003831526103',
-  appId: '1:1003831526103:web:10c34022da47d1c6d66692',
-  measurementId: 'G-4Y59YF9M7P',
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize with a unique name

@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Projects: Publik hanya bisa membaca (read). Hanya admin yang bisa tambah/ubah/hapus.
+    match /projects/{projectId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Certificates: Publik hanya bisa membaca (read). Hanya admin yang bisa tambah/ubah/hapus.
+    match /certificates/{certId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Portfolio Comments: Publik bisa membaca (read) & membuat komentar baru (create) dengan validasi data.
+    // Tidak ada yang bisa mengedit atau menghapus komentar yang sudah dibuat via client.
+    match /portfolio-comments/{commentId} {
+      allow read: if true;
+      allow create: if request.resource.data.userName is string 
+                    && request.resource.data.content is string
+                    && request.resource.data.userName.size() > 0
+                    && request.resource.data.userName.size() <= 50
+                    && request.resource.data.content.size() > 0
+                    && request.resource.data.content.size() <= 1000;
+      allow update, delete: if false;
+    }
+  }
+}
