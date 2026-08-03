@@ -12,7 +12,7 @@ const StatusBadge = memo(() => (
       <div className="relative px-3 sm:px-4 py-2 rounded-full bg-black/40 backdrop-blur-xl border border-white/10">
         <span className="bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-transparent bg-clip-text sm:text-sm text-[0.7rem] font-medium flex items-center">
           <Sparkles className="sm:w-4 sm:h-4 w-3 h-3 mr-2 text-blue-400" />
-          Ready to Innovate
+          Open to opportunities
         </span>
       </div>
     </div>
@@ -21,18 +21,18 @@ const StatusBadge = memo(() => (
 
 const MainTitle = memo(() => (
   <div className="space-y-2" data-aos="fade-up" data-aos-delay="600">
-    <h1 className="text-5xl sm:text-6xl md:text-6xl lg:text-6xl xl:text-7xl font-bold tracking-tight">
+    <h1 className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl xl:text-6xl font-bold tracking-tight">
       <span className="relative inline-block">
         <span className="absolute -inset-2 bg-gradient-to-r from-[#6366f1] to-[#a855f7] blur-2xl opacity-20"></span>
         <span className="relative bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent">
-          Programmer &
+          Software Engineer
         </span>
       </span>
       <br />
       <span className="relative inline-block mt-2">
         <span className="absolute -inset-2 bg-gradient-to-r from-[#6366f1] to-[#a855f7] blur-2xl opacity-20"></span>
         <span className="relative bg-gradient-to-r from-[#6366f1] to-[#a855f7] bg-clip-text text-transparent">
-          Developer
+          & IT Support
         </span>
       </span>
     </h1>
@@ -77,8 +77,18 @@ const SocialLink = memo(({ icon: Icon, link }) => (
 const TYPING_SPEED = 100;
 const ERASING_SPEED = 50;
 const PAUSE_DURATION = 2000;
-const WORDS = ["Informatics Engineer", "Tech Enthusiast"];
-const TECH_STACK = ["Laravel", "Javascript", "Python", "Bootstrap"];
+const WORDS = [
+  "Web Developer",
+  "Mobile Developer",
+  "Full Stack Developer",
+  "Frontend Developer",
+  "Backend Developer",
+  "ERP Specialist",
+  "IT Specialist",
+  "AI Engineer",
+  "AI Automation",
+];
+const TECH_STACK = ["Laravel", "TypeScript", "JavaScript", "Angular"];
 const SOCIAL_LINKS = [
   { icon: Github, link: 'https://github.com/Domok23' },
   { icon: Linkedin, link: 'https://www.linkedin.com/in/wahyu-oktavian-975185178/' },
@@ -170,14 +180,14 @@ const Home = () => {
                 <MainTitle />
 
                 {/* Typing Effect */}
-                <div className="h-8 flex items-center" data-aos="fade-up" data-aos-delay="800">
+                <div className="min-h-8 flex items-center" data-aos="fade-up" data-aos-delay="800">
                   <span className="text-xl md:text-2xl bg-gradient-to-r from-gray-100 to-gray-300 bg-clip-text text-transparent font-light">{text}</span>
                   <span className="w-[3px] h-6 bg-gradient-to-t from-[#6366f1] to-[#a855f7] ml-1 animate-blink"></span>
                 </div>
 
                 {/* Description */}
                 <p className="text-base md:text-lg text-gray-400 max-w-xl leading-relaxed font-light" data-aos="fade-up" data-aos-delay="1000">
-                  "Creating innovative, functional, and user-friendly websites and applications for seamless digital solutions."
+                  I build and maintain web applications, and keep systems running day to day — bridging software delivery with reliable IT support.
                 </p>
 
                 {/* Tech Stack */}

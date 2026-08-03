@@ -81,8 +81,8 @@ const StatCard = memo(({ icon: Icon, color, value, label, description, animation
 ));
 
 const AboutPage = () => {
-  const TotalProjects = 58;
-  const experience = 3; //years
+  const TotalProjects = 68;
+  const experience = 3; // years
   const certificates = 4;
   // Memoized calculations
   const { totalProjects, totalCertificates, YearExperience } = useMemo(() => {
@@ -172,8 +172,7 @@ const AboutPage = () => {
             </h2>
 
             <p className="text-base sm:text-lg lg:text-xl text-gray-400 leading-relaxed text-justify pb-4 sm:pb-0" data-aos="fade-right" data-aos-duration="1500">
-              I am a developer, programmer, IT Support with over 2 years of experience in developing and managing various web projects. Skilled in modern web technologies and passionate about continuously learning and adapting to the latest
-              industry developments. I am seeking an opportunity to join a dynamic team where I can contribute my technical expertise and further develop as a professional.
+              I am a Software Engineer and IT Support professional with 3 years of hands-on experience. I design and ship web applications (Laravel, JavaScript/TypeScript, Angular), then support the same systems in production — troubleshooting, maintenance, and user enablement. I look for a team where I can own features end to end and keep infrastructure reliable.
             </p>
 
             <div className="flex flex-col lg:flex-row items-center lg:items-start gap-4 lg:gap-4 lg:px-0 w-full">
