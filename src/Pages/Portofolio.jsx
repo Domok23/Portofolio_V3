@@ -104,8 +104,11 @@ const techStacks = [
   { icon: 'html.svg', language: 'HTML' },
   { icon: 'css.svg', language: 'CSS' },
   { icon: 'javascript.svg', language: 'JavaScript' },
+  { icon: 'typescript.svg', language: 'TypeScript' },
   { icon: 'php.svg', language: 'PHP' },
   { icon: 'python.svg', language: 'Python' },
+  { icon: 'angular.svg', language: 'Angular' },
+  { icon: 'tailwind.svg', language: 'Tailwind' },
   { icon: 'git.svg', language: 'GIT' },
   { icon: 'mysql2.svg', language: 'MySQL' },
   { icon: 'bootstrap.svg', language: 'Bootstrap' },
@@ -115,10 +118,7 @@ const techStacks = [
   { icon: 'laragon.svg', language: 'Laragon' },
   { icon: 'wordpress.svg', language: 'WordPress' },
   { icon: 'figma.svg', language: 'Figma' },
-  { icon: 'vscode.svg', language: 'Visual Studio Code' },
   { icon: 'c.svg', language: 'C++' },
-  { icon: 'office.svg', language: 'Microsoft Office' },
-  { icon: 'coreldraw.svg', language: 'CorelDraw' },
 ];
 
 export default function FullWidthTabs() {

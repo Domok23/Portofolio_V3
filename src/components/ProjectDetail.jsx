@@ -5,6 +5,7 @@ import {
   ChevronRight, Layers, Layout, Globe, Package, Cpu, Code,
 } from "lucide-react";
 import Swal from 'sweetalert2';
+import { db, doc, getDoc } from "../firebase";
 
 const TECH_ICONS = {
   React: Globe,
@@ -98,23 +99,84 @@ const ProjectDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [project, setProject] = useState(null);
+  const [notFound, setNotFound] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-    const storedProjects = JSON.parse(localStorage.getItem("projects")) || [];
-    const selectedProject = storedProjects.find((p) => String(p.id) === id);
-    
-    if (selectedProject) {
-      const enhancedProject = {
-        ...selectedProject,
-        Features: selectedProject.Features || [],
-        TechStack: selectedProject.TechStack || [],
-        Github: selectedProject.Github || 'https://github.com/Domok23',
-      };
-      setProject(enhancedProject);
-    }
+    let cancelled = false;
+
+    const enhance = (data) => ({
+      ...data,
+      Features: data.Features || [],
+      TechStack: data.TechStack || [],
+      Github: data.Github || "https://github.com/Domok23",
+    });
+
+    const loadProject = async () => {
+      window.scrollTo(0, 0);
+      setProject(null);
+      setNotFound(false);
+      setIsImageLoaded(false);
+
+      if (!id) {
+        setNotFound(true);
+        return;
+      }
+
+      try {
+        const snap = await getDoc(doc(db, "projects", id));
+        if (cancelled) return;
+
+        if (snap.exists()) {
+          const data = enhance({ id: snap.id, ...snap.data() });
+          setProject(data);
+
+          const stored = JSON.parse(localStorage.getItem("projects") || "[]");
+          const next = stored.filter((p) => String(p.id) !== String(snap.id));
+          next.push(data);
+          localStorage.setItem("projects", JSON.stringify(next));
+          return;
+        }
+
+        setNotFound(true);
+      } catch (error) {
+        console.error("Error fetching project:", error);
+        if (cancelled) return;
+
+        const stored = JSON.parse(localStorage.getItem("projects") || "[]");
+        const cached = stored.find((p) => String(p.id) === String(id));
+        if (cached) {
+          setProject(enhance(cached));
+        } else {
+          setNotFound(true);
+        }
+      }
+    };
+
+    loadProject();
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
+
+  if (notFound) {
+    return (
+      <div className="min-h-screen bg-[#030014] flex items-center justify-center px-6">
+        <div className="text-center space-y-4">
+          <h2 className="text-xl md:text-3xl font-bold text-white">Project not found</h2>
+          <p className="text-gray-400 text-sm md:text-base">This project may have been removed or the link is invalid.</p>
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/90 hover:bg-white/10 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to portfolio
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!project) {
     return (
