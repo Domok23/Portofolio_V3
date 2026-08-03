@@ -172,7 +172,7 @@ const AboutPage = () => {
             </h2>
 
             <p className="text-base sm:text-lg lg:text-xl text-gray-400 leading-relaxed text-justify pb-4 sm:pb-0" data-aos="fade-right" data-aos-duration="1500">
-              I am a Software Engineer and IT Support professional with 3 years of hands-on experience. I design and ship web applications (Laravel, JavaScript/TypeScript, Angular), then support the same systems in production — troubleshooting, maintenance, and user enablement. I look for a team where I can own features end to end and keep infrastructure reliable.
+              I am a Software Engineer and IT Support professional with 3+ years of hands-on experience. I design and ship web applications (Laravel, JavaScript/TypeScript, Angular, React), then support the same systems in production — troubleshooting, maintenance, and user enablement. I look for a team where I can own features end to end and keep infrastructure reliable.
             </p>
 
             <div className="flex flex-col lg:flex-row items-center lg:items-start gap-4 lg:gap-4 lg:px-0 w-full">
