@@ -2,8 +2,55 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="https://domok23.github.io/profile/images/bg_1a.png" />
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("theme");
+          if (t !== "dark" && t !== "light") t = "light";
+          var dark = t === "dark";
+          var bg = dark ? "#09090b" : "#fafafa";
+          var fg = dark ? "#fafafa" : "#09090b";
+          var root = document.documentElement;
+          root.classList.toggle("dark", dark);
+          root.style.colorScheme = t;
+          root.style.backgroundColor = bg;
+          document.write(
+            '<style id="theme-boot">html,body,#root{background:' +
+              bg +
+              "!important;background-color:" +
+              bg +
+              "!important;color:" +
+              fg +
+              ";min-height:100%;}html{color-scheme:" +
+              t +
+              ";}</style>"
+          );
+        } catch (e) {}
+      })();
+    </script>
+    <meta name="theme-color" content="#FAFAFA" id="meta-theme-color" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="/Portofolio_V3/vite.svg" type="image/svg+xml" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
     <meta
       name="google-site-verification"
       content="ZYNfZwMUiNwSMF3EMvY85bid2BVvB12uMMRfUNWw75A"
@@ -22,7 +69,6 @@
       content="Wahyu Oktavian — Software Engineer & IT Support with 3 years of experience building web applications (Laravel, TypeScript, Angular) and keeping production systems reliable."
     />
 
-    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://domok23.github.io/Portofolio_V3/" />
     <meta
@@ -33,11 +79,16 @@
       property="og:description"
       content="Software Engineer & IT Support with 3 years of experience building web applications and supporting production systems."
     />
-    <meta property="og:image" content="https://domok23.github.io/Portofolio_V3/Meta.png" />
+    <meta
+      property="og:image"
+      content="https://domok23.github.io/Portofolio_V3/Meta.png"
+    />
 
-    <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://domok23.github.io/Portofolio_V3/" />
+    <meta
+      property="twitter:url"
+      content="https://domok23.github.io/Portofolio_V3/"
+    />
     <meta
       property="twitter:title"
       content="Wahyu Oktavian — Software Engineer & IT Support"
@@ -46,9 +97,15 @@
       property="twitter:description"
       content="Software Engineer & IT Support with 3 years of experience building web applications and supporting production systems."
     />
-    <meta property="twitter:image" content="https://domok23.github.io/Portofolio_V3/Meta.png" />
-    <meta name="theme-color" content="rgb(3,0,20)" />
-    <meta name="msapplication-navbutton-color" content="rgb(3,0,20)" />
+    <meta
+      property="twitter:image"
+      content="https://domok23.github.io/Portofolio_V3/Meta.png"
+    />
+    <meta
+      name="msapplication-navbutton-color"
+      content="#FAFAFA"
+      id="meta-nav-color"
+    />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta
       name="apple-mobile-web-app-status-bar-style"
@@ -56,9 +113,28 @@
     />
 
     <title>Wahyu Oktavian — Software Engineer & IT Support</title>
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("theme");
+          if (t !== "dark" && t !== "light") t = "light";
+          var bg = t === "dark" ? "#09090B" : "#FAFAFA";
+          var themeMeta = document.getElementById("meta-theme-color");
+          var navMeta = document.getElementById("meta-nav-color");
+          if (themeMeta) themeMeta.setAttribute("content", bg);
+          if (navMeta) navMeta.setAttribute("content", bg);
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      window.addEventListener("DOMContentLoaded", function () {
+        var boot = document.getElementById("theme-boot");
+        if (boot) boot.remove();
+      });
+    </script>
   </body>
 </html>
