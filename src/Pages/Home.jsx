@@ -58,6 +58,9 @@ const CTAButton = memo(({ href, text, icon: Icon }) => {
           behavior: "smooth"
         });
       }
+      if (targetId.toLowerCase() === "portfolio") {
+        window.dispatchEvent(new CustomEvent("switch-portfolio-tab", { detail: { tabIndex: 0 } }));
+      }
     }
   };
 

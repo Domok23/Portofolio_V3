@@ -3,7 +3,7 @@ import { FileText, Code, Award, Globe, ArrowUpRight, Sparkles, UserCheck } from 
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { db } from "../firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs } from "firebase/firestore";
 
 // Memoized Components
 const Header = memo(() => (
@@ -84,8 +84,8 @@ const StatCard = memo(({ icon: Icon, color, value, label, description, animation
 
 const AboutPage = () => {
   const [stats, setStats] = useState({
-    totalProjects: 68,
-    totalCertificates: 4,
+    totalProjects: 0,
+    totalCertificates: 0,
     YearExperience: 3,
     cvUrl: "https://drive.google.com/file/d/1OaHN3hVqncJR9-7HXDh2qLbWGYN6Nabp/view?usp=drive_link",
   });
@@ -93,17 +93,23 @@ const AboutPage = () => {
   useEffect(() => {
     const fetchProfileStats = async () => {
       try {
-        const docRef = doc(db, "profile-info", "main");
-        const snap = await getDoc(docRef);
-        if (snap.exists()) {
-          const data = snap.data();
-          setStats((prev) => ({
-            ...prev,
-            totalProjects: data.projectsCompleted || prev.totalProjects,
-            YearExperience: data.expYears || prev.YearExperience,
-            cvUrl: data.cvUrl || prev.cvUrl,
-          }));
-        }
+        const profDocRef = doc(db, "profile-info", "main");
+        const [profSnap, certSnap, projSnap] = await Promise.all([
+          getDoc(profDocRef),
+          getDocs(collection(db, "certificates")),
+          getDocs(collection(db, "projects")),
+        ]);
+
+        const profData = profSnap.exists() ? profSnap.data() : {};
+        const totalCerts = certSnap.docs.length;
+        const totalProjectsCount = projSnap.docs.length;
+
+        setStats({
+          totalProjects: profData.projectsCompleted || totalProjectsCount,
+          totalCertificates: totalCerts,
+          YearExperience: profData.expYears || 3,
+          cvUrl: profData.cvUrl || "https://drive.google.com/file/d/1OaHN3hVqncJR9-7HXDh2qLbWGYN6Nabp/view?usp=drive_link",
+        });
       } catch (e) {
         console.error("Failed to fetch profile stats:", e);
       }
@@ -137,6 +143,15 @@ const AboutPage = () => {
     };
   }, []);
 
+  const handleCardClick = (tabIndex) => {
+    const section = document.getElementById("Portfolio");
+    if (section) {
+      const top = section.offsetTop - 80;
+      window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+    }
+    window.dispatchEvent(new CustomEvent("switch-portfolio-tab", { detail: { tabIndex } }));
+  };
+
   // Memoized stats data
   const statsData = useMemo(
     () => [
@@ -147,6 +162,7 @@ const AboutPage = () => {
         label: 'Total Projects',
         description: 'Innovative web solutions crafted',
         animation: 'fade-right',
+        tabIndex: 0,
       },
       {
         icon: Award,
@@ -155,6 +171,7 @@ const AboutPage = () => {
         label: 'Certificates',
         description: 'Professional skills validated',
         animation: 'fade-up',
+        tabIndex: 1,
       },
       {
         icon: Globe,
@@ -163,6 +180,7 @@ const AboutPage = () => {
         label: 'Years of Experience',
         description: 'Continuous learning journey',
         animation: 'fade-left',
+        tabIndex: 2,
       },
     ],
     [totalProjects, totalCertificates, YearExperience]
@@ -205,11 +223,7 @@ const AboutPage = () => {
                 href="#Portfolio"
                 onClick={(e) => {
                   e.preventDefault();
-                  const section = document.getElementById("Portfolio");
-                  if (section) {
-                    const top = section.offsetTop - 80;
-                    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
-                  }
+                  handleCardClick(0);
                 }}
                 className="w-full lg:w-auto"
               >
@@ -227,23 +241,21 @@ const AboutPage = () => {
           <ProfileImage />
         </div>
 
-        <a
-          href="#Portfolio"
-          onClick={(e) => {
-            e.preventDefault();
-            const section = document.getElementById("Portfolio");
-            if (section) {
-              const top = section.offsetTop - 80;
-              window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
-            }
-          }}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 cursor-pointer">
-            {statsData.map((stat) => (
-              <StatCard key={stat.label} {...stat} />
-            ))}
-          </div>
-        </a>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 cursor-pointer">
+          {statsData.map((stat) => (
+            <a
+              key={stat.label}
+              href="#Portfolio"
+              onClick={(e) => {
+                e.preventDefault();
+                handleCardClick(stat.tabIndex);
+              }}
+              className="block"
+            >
+              <StatCard {...stat} />
+            </a>
+          ))}
+        </div>
       </div>
 
       <style jsx>{`

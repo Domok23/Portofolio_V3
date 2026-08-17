@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { db, collection, addDoc, getDocs, doc, getDoc } from "../../firebase";
 import { deleteDoc, updateDoc, setDoc } from "firebase/firestore";
 import Swal from "sweetalert2";
@@ -46,6 +46,37 @@ const Dashboard = () => {
     Features: "",
   });
 
+  const formatMonthYear = (monthString) => {
+    if (!monthString) return "";
+    const [year, month] = monthString.split("-");
+    if (!year || !month) return monthString;
+    const date = new Date(parseInt(year, 10), parseInt(month, 10) - 1, 1);
+    return date.toLocaleString("en-US", { month: "short", year: "numeric" });
+  };
+
+  const parseToMonthInputValue = (dateString) => {
+    if (!dateString) return "";
+    if (/^\d{4}-\d{2}$/.test(dateString)) return dateString;
+    const parsed = new Date(Date.parse(dateString.includes(" ") ? `1 ${dateString}` : dateString));
+    if (isNaN(parsed.getTime())) return "";
+    const year = parsed.getFullYear();
+    const month = String(parsed.getMonth() + 1).padStart(2, "0");
+    return `${year}-${month}`;
+  };
+
+  const parseCertificateDate = (cert) => {
+    if (cert.Date) {
+      const parsed = Date.parse(cert.Date.includes(" ") ? `1 ${cert.Date}` : cert.Date);
+      if (!isNaN(parsed)) return parsed;
+    }
+    if (cert.createdAt) {
+      if (typeof cert.createdAt.toDate === "function") return cert.createdAt.toDate().getTime();
+      const created = new Date(cert.createdAt).getTime();
+      if (!isNaN(created)) return created;
+    }
+    return 0;
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -57,9 +88,12 @@ const Dashboard = () => {
       const projSnap = await getDocs(collection(db, "projects"));
       setProjects(projSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
 
-      // Certificates
+      // Certificates (sorted by issue date newest first)
       const certSnap = await getDocs(collection(db, "certificates"));
-      setCertificates(certSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
+      const sortedCerts = certSnap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => parseCertificateDate(b) - parseCertificateDate(a));
+      setCertificates(sortedCerts);
 
       // Profile info
       const profRef = doc(db, "profile-info", "main");
@@ -391,13 +425,25 @@ const Dashboard = () => {
           <p className="text-gray-400 text-sm mt-1">Logged in as: {currentUser?.email}</p>
         </div>
 
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 px-5 py-2.5 rounded-xl border border-red-500/30 transition-all"
-        >
-          <LogOut className="w-4 h-4" />
-          Logout
-        </button>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 bg-[#6366f1]/20 hover:bg-[#6366f1]/30 text-indigo-300 px-5 py-2.5 rounded-xl border border-[#6366f1]/30 transition-all hover:scale-105"
+          >
+            <ExternalLink className="w-4 h-4" />
+            View Website
+          </Link>
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 px-5 py-2.5 rounded-xl border border-red-500/30 transition-all hover:scale-105"
+          >
+            <LogOut className="w-4 h-4" />
+            Logout
+          </button>
+        </div>
       </div>
 
       {/* Tabs Nav */}
@@ -839,13 +885,17 @@ const Dashboard = () => {
               </div>
 
               <div>
-                <label className="block text-xs text-gray-400 mb-1">Issue Date</label>
+                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                  Issue Date (Month & Year) {newCertificate.Date && <span className="text-indigo-400 font-normal">({newCertificate.Date})</span>}
+                </label>
                 <input
-                  type="text"
-                  placeholder="e.g. Nov 2024"
-                  value={newCertificate.Date}
-                  onChange={(e) => setNewCertificate({ ...newCertificate, Date: e.target.value })}
-                  className="w-full p-3 bg-white/10 rounded-xl border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-[#6366f1] focus:ring-2 focus:ring-[#6366f1]/40 transition-all text-xs"
+                  type="month"
+                  value={parseToMonthInputValue(newCertificate.Date)}
+                  onChange={(e) => {
+                    const formatted = formatMonthYear(e.target.value);
+                    setNewCertificate({ ...newCertificate, Date: formatted });
+                  }}
+                  className="w-full p-3 bg-white/10 rounded-xl border border-white/20 text-white focus:outline-none focus:border-[#6366f1] focus:ring-2 focus:ring-[#6366f1]/40 transition-all text-xs [color-scheme:dark]"
                 />
               </div>
               <button

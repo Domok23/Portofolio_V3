@@ -135,7 +135,29 @@ export default function FullWidthTabs() {
     AOS.init({
       once: false, // This will make animations occur only once
     });
+
+    const handleSwitchTab = (e) => {
+      if (typeof e.detail?.tabIndex === "number") {
+        setValue(e.detail.tabIndex);
+      }
+    };
+
+    window.addEventListener("switch-portfolio-tab", handleSwitchTab);
+    return () => window.removeEventListener("switch-portfolio-tab", handleSwitchTab);
   }, []);
+
+  const parseCertificateDate = (cert) => {
+    if (cert.Date) {
+      const parsed = Date.parse(cert.Date.includes(" ") ? `1 ${cert.Date}` : cert.Date);
+      if (!isNaN(parsed)) return parsed;
+    }
+    if (cert.createdAt) {
+      if (typeof cert.createdAt.toDate === "function") return cert.createdAt.toDate().getTime();
+      const created = new Date(cert.createdAt).getTime();
+      if (!isNaN(created)) return created;
+    }
+    return 0;
+  };
 
   const fetchData = useCallback(async () => {
     try {
@@ -153,7 +175,9 @@ export default function FullWidthTabs() {
         TechStack: doc.data().TechStack || [],
       }));
 
-      const certificateData = certificateSnapshot.docs.map((doc) => doc.data());
+      const certificateData = certificateSnapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .sort((a, b) => parseCertificateDate(b) - parseCertificateDate(a));
 
       setProjects(projectData);
       setCertificates(certificateData);
