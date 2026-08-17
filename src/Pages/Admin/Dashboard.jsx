@@ -117,23 +117,23 @@ const Dashboard = () => {
   const [certFile, setCertFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  const uploadToImgBB = async (file) => {
-    if (!file) return { url: "", deleteUrl: "" };
+  const uploadToCloudinary = async (file) => {
+    if (!file) return "";
     const formData = new FormData();
-    formData.append("image", file);
-    const apiKey = import.meta.env.VITE_IMGBB_API_KEY || "bb7ea0ebda097a0211ae7d742d048858";
-    const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+    formData.append("file", file);
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "hbwqhfrc";
+    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "portfolio_gh";
+    formData.append("upload_preset", uploadPreset);
+
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
       method: "POST",
       body: formData,
     });
     const data = await res.json();
-    if (data && data.success) {
-      return {
-        url: data.data.url,
-        deleteUrl: data.data.delete_url,
-      };
+    if (data && data.secure_url) {
+      return data.secure_url;
     } else {
-      throw new Error(data?.error?.message || "Failed to upload image to ImgBB");
+      throw new Error(data?.error?.message || "Failed to upload file to Cloudinary");
     }
   };
 
@@ -150,9 +150,8 @@ const Dashboard = () => {
       let deleteUrl = newProject.deleteUrl || "";
 
       if (projectFile) {
-        const uploadRes = await uploadToImgBB(projectFile);
-        imgUrl = uploadRes.url;
-        deleteUrl = uploadRes.deleteUrl;
+        imgUrl = await uploadToCloudinary(projectFile);
+        deleteUrl = "";
       }
 
       if (!imgUrl) {
@@ -234,22 +233,7 @@ const Dashboard = () => {
       await deleteDoc(doc(db, "projects", project.id));
       fetchData();
 
-      if (project.deleteUrl) {
-        const deleteImg = await Swal.fire({
-          title: "Delete Image from ImgBB?",
-          text: "Project removed from database. Would you like to open the image deletion page on ImgBB?",
-          icon: "question",
-          showCancelButton: true,
-          confirmButtonText: "Delete ImgBB Image",
-          cancelButtonText: "Skip",
-          confirmButtonColor: "#6366f1",
-        });
-        if (deleteImg.isConfirmed) {
-          window.open(project.deleteUrl, "_blank");
-        }
-      } else {
-        Swal.fire("Deleted", "Project removed from database", "success");
-      }
+      Swal.fire("Deleted", "Project removed from database", "success");
     }
   };
 
@@ -269,9 +253,8 @@ const Dashboard = () => {
       let deleteUrl = newCertificate.deleteUrl || "";
 
       if (certFile) {
-        const uploadRes = await uploadToImgBB(certFile);
-        imgUrl = uploadRes.url;
-        deleteUrl = uploadRes.deleteUrl;
+        imgUrl = await uploadToCloudinary(certFile);
+        deleteUrl = "";
       }
 
       if (!imgUrl) {
@@ -341,52 +324,11 @@ const Dashboard = () => {
       await deleteDoc(doc(db, "certificates", cert.id));
       fetchData();
 
-      if (cert.deleteUrl) {
-        const deleteImg = await Swal.fire({
-          title: "Delete Image from ImgBB?",
-          text: "Certificate removed from database. Would you like to open the image deletion page on ImgBB?",
-          icon: "question",
-          showCancelButton: true,
-          confirmButtonText: "Delete ImgBB Image",
-          cancelButtonText: "Skip",
-          confirmButtonColor: "#6366f1",
-        });
-        if (deleteImg.isConfirmed) {
-          window.open(cert.deleteUrl, "_blank");
-        }
-      } else {
-        Swal.fire("Deleted", "Certificate removed from database", "success");
-      }
+      Swal.fire("Deleted", "Certificate removed from database", "success");
     }
   };
 
   const [cvFile, setCvFile] = useState(null);
-
-  const uploadPdfFile = async (file) => {
-    if (!file) return "";
-    
-    // Jika file berupa gambar, gunakan ImgBB
-    if (file.type.startsWith("image/")) {
-      const res = await uploadToImgBB(file);
-      return res.url;
-    }
-
-    // Jika file berupa PDF: gunakan tmpfiles.org API (CORS-enabled, gratis, tanpa kartu kredit)
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const res = await fetch("https://tmpfiles.org/api/v1/upload", {
-      method: "POST",
-      body: formData,
-    });
-    const data = await res.json();
-    if (data && data.status === "success" && data.data?.url) {
-      // Ubah URL halaman menjadi direct link berkas PDF
-      return data.data.url.replace("tmpfiles.org/", "tmpfiles.org/dl/");
-    } else {
-      throw new Error("Failed to upload PDF file. Please use Google Drive share link (Option A).");
-    }
-  };
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();
@@ -395,7 +337,7 @@ const Dashboard = () => {
       let finalCvUrl = profileInfo.cvUrl || "";
 
       if (cvFile) {
-        finalCvUrl = await uploadPdfFile(cvFile);
+        finalCvUrl = await uploadToCloudinary(cvFile);
       }
 
       const updatedProfile = {
@@ -533,7 +475,7 @@ const Dashboard = () => {
                 <div className="p-3 bg-white/5 rounded-xl border border-white/10 space-y-3">
                   <div className={newProject.Img ? "opacity-40" : ""}>
                     <span className="block text-xs text-[#6366f1] font-medium mb-1.5">
-                      Option A: Upload File from Device (ImgBB) {newProject.Img && "(Disabled - URL filled)"}
+                      Option A: Upload File from Device (Cloudinary) {newProject.Img && "(Disabled - URL filled)"}
                     </span>
                     {projectFile ? (
                       <div className="flex items-center justify-between p-2.5 bg-[#6366f1]/15 rounded-lg border border-[#6366f1]/40">
@@ -837,7 +779,7 @@ const Dashboard = () => {
                 <div className="p-3 bg-white/5 rounded-xl border border-white/10 space-y-3">
                   <div className={newCertificate.ImgSertif ? "opacity-40" : ""}>
                     <span className="block text-xs text-[#6366f1] font-medium mb-1.5">
-                      Option A: Upload File from Device (ImgBB) {newCertificate.ImgSertif && "(Disabled - URL filled)"}
+                      Option A: Upload File from Device (Cloudinary) {newCertificate.ImgSertif && "(Disabled - URL filled)"}
                     </span>
                     {certFile ? (
                       <div className="flex items-center justify-between p-2.5 bg-[#6366f1]/15 rounded-lg border border-[#6366f1]/40">
