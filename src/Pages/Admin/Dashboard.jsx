@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { db, storage, collection, addDoc, getDocs, doc, getDoc } from "../../firebase";
+import { db, collection, addDoc, getDocs, doc, getDoc } from "../../firebase";
 import { deleteDoc, updateDoc, setDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import Swal from "sweetalert2";
-import { LogOut, FolderPlus, Award, Boxes, User, Trash2, Plus, Edit3, Upload, Loader2, XCircle, FileText, X, ExternalLink, Github, ChevronDown, ChevronUp, Star } from "lucide-react";
+import { LogOut, FolderPlus, Award, User, Trash2, Plus, Edit3, Upload, Loader2, FileText, X, ExternalLink, Github, ChevronDown, ChevronUp, Star } from "lucide-react";
 
 const Dashboard = () => {
   const { logout, currentUser } = useAuth();

@@ -201,7 +201,18 @@ const AboutPage = () => {
                   <FileText className="w-4 h-4 sm:w-5 sm:h-5" /> View CV
                 </button>
               </a>
-              <a href="#Portofolio" className="w-full lg:w-auto">
+              <a
+                href="#Portfolio"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const section = document.getElementById("Portfolio");
+                  if (section) {
+                    const top = section.offsetTop - 80;
+                    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+                  }
+                }}
+                className="w-full lg:w-auto"
+              >
                 <button
                   data-aos="fade-up"
                   data-aos-duration="1000"
@@ -216,7 +227,17 @@ const AboutPage = () => {
           <ProfileImage />
         </div>
 
-        <a href="#Portofolio">
+        <a
+          href="#Portfolio"
+          onClick={(e) => {
+            e.preventDefault();
+            const section = document.getElementById("Portfolio");
+            if (section) {
+              const top = section.offsetTop - 80;
+              window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+            }
+          }}
+        >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 cursor-pointer">
             {statsData.map((stat) => (
               <StatCard key={stat.label} {...stat} />
