@@ -4,7 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { db, collection, addDoc, getDocs, doc, getDoc } from "../../firebase";
 import { deleteDoc, updateDoc, setDoc } from "firebase/firestore";
 import Swal from "sweetalert2";
-import { LogOut, FolderPlus, Award, User, Trash2, Plus, Edit3, Upload, Loader2, FileText, X, ExternalLink, Github, ChevronDown, ChevronUp, Star } from "lucide-react";
+import { LogOut, FolderPlus, Award, User, Trash2, Plus, Edit3, Upload, Loader2, FileText, X, ExternalLink, Github, ChevronDown, ChevronUp, Star, Boxes, Sparkles, ArrowUp, ArrowDown } from "lucide-react";
 
 const Dashboard = () => {
   const { logout, currentUser } = useAuth();
@@ -17,6 +17,13 @@ const Dashboard = () => {
   const [projects, setProjects] = useState([]);
   const [certificates, setCertificates] = useState([]);
   const [techStacks, setTechStacks] = useState([]);
+  const [newTechStack, setNewTechStack] = useState({
+    Name: "",
+    Icon: "",
+    order: "",
+  });
+  const [techFile, setTechFile] = useState(null);
+  const [editingTechId, setEditingTechId] = useState(null);
   const [profileInfo, setProfileInfo] = useState({
     expYears: 3,
     projectsCompleted: 68,
@@ -81,6 +88,13 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
+  const parseTechOrder = (tech, fallback = 999) => {
+    if (tech?.order !== undefined && tech?.order !== null && !isNaN(Number(tech.order))) {
+      return Number(tech.order);
+    }
+    return fallback;
+  };
+
   const fetchData = async () => {
     try {
       setIsLoadingData(true);
@@ -94,6 +108,13 @@ const Dashboard = () => {
         .map((d) => ({ id: d.id, ...d.data() }))
         .sort((a, b) => parseCertificateDate(b) - parseCertificateDate(a));
       setCertificates(sortedCerts);
+
+      // Tech Stacks (sorted by order)
+      const techSnap = await getDocs(collection(db, "tech-stacks"));
+      const sortedTech = techSnap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => parseTechOrder(a) - parseTechOrder(b));
+      setTechStacks(sortedTech);
 
       // Profile info
       const profRef = doc(db, "profile-info", "main");
@@ -356,6 +377,188 @@ const Dashboard = () => {
     }
   };
 
+  const handleSaveTechStack = async (e) => {
+    e.preventDefault();
+    try {
+      setIsUploading(true);
+      let iconUrl = newTechStack.Icon;
+
+      if (techFile) {
+        iconUrl = await uploadToCloudinary(techFile);
+      }
+
+      if (!iconUrl) {
+        throw new Error("Please select an icon file or enter an icon URL/path.");
+      }
+
+      const desiredPos = newTechStack.order !== "" && !isNaN(Number(newTechStack.order))
+        ? Math.max(1, Number(newTechStack.order))
+        : (editingTechId ? (techStacks.findIndex((t) => t.id === editingTechId) + 1 || 1) : (techStacks.length + 1));
+
+      const techData = {
+        Name: newTechStack.Name,
+        name: newTechStack.Name,
+        language: newTechStack.Name,
+        Icon: iconUrl,
+        icon: iconUrl,
+        order: desiredPos,
+      };
+
+      if (editingTechId) {
+        await updateDoc(doc(db, "tech-stacks", editingTechId), techData);
+        const others = techStacks.filter((t) => t.id !== editingTechId);
+        const insertIndex = Math.min(Math.max(0, desiredPos - 1), others.length);
+        others.splice(insertIndex, 0, { id: editingTechId, ...techData });
+        const normalized = others.map((item, idx) => ({ ...item, order: idx + 1 }));
+        setTechStacks(normalized);
+        await Promise.all(
+          normalized.map((item) => updateDoc(doc(db, "tech-stacks", item.id), { order: item.order }))
+        );
+        Swal.fire("Saved", "Tech Stack updated successfully!", "success");
+        setEditingTechId(null);
+      } else {
+        const newDocRef = await addDoc(collection(db, "tech-stacks"), {
+          ...techData,
+          createdAt: new Date(),
+        });
+        const others = [...techStacks];
+        const insertIndex = Math.min(Math.max(0, desiredPos - 1), others.length);
+        others.splice(insertIndex, 0, { id: newDocRef.id, ...techData });
+        const normalized = others.map((item, idx) => ({ ...item, order: idx + 1 }));
+        setTechStacks(normalized);
+        await Promise.all(
+          normalized.map((item) => updateDoc(doc(db, "tech-stacks", item.id), { order: item.order }))
+        );
+        Swal.fire("Saved", "Tech Stack added successfully!", "success");
+      }
+
+      setNewTechStack({ Name: "", Icon: "", order: "" });
+      setTechFile(null);
+      fetchData();
+    } catch (err) {
+      Swal.fire("Error", err.message, "error");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleStartEditTechStack = (tech, index) => {
+    setEditingTechId(tech.id);
+    setNewTechStack({
+      Name: tech.Name || tech.name || tech.language || "",
+      Icon: tech.Icon || tech.icon || "",
+      order: index + 1,
+    });
+    setTechFile(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleCancelEditTechStack = () => {
+    setEditingTechId(null);
+    setNewTechStack({ Name: "", Icon: "", order: "" });
+    setTechFile(null);
+  };
+
+  const handleMoveTechStack = async (index, direction) => {
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= techStacks.length) return;
+
+    const nextList = [...techStacks];
+    const [movedItem] = nextList.splice(index, 1);
+    nextList.splice(targetIndex, 0, movedItem);
+
+    // Clean sequential 1-based order: 1, 2, 3...
+    const normalizedList = nextList.map((item, idx) => ({
+      ...item,
+      order: idx + 1,
+    }));
+
+    setTechStacks(normalizedList);
+
+    try {
+      await Promise.all(
+        normalizedList.map((item) =>
+          updateDoc(doc(db, "tech-stacks", item.id), { order: item.order })
+        )
+      );
+    } catch (err) {
+      console.error("Failed to reorder tech stacks:", err);
+      fetchData();
+    }
+  };
+
+  const handleDeleteTechStack = async (tech) => {
+    const confirm = await Swal.fire({
+      title: "Are you sure?",
+      text: `Delete "${tech.Name || tech.language || "Tech Stack"}" permanently?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+    });
+
+    if (confirm.isConfirmed) {
+      await deleteDoc(doc(db, "tech-stacks", tech.id));
+      fetchData();
+      Swal.fire("Deleted", "Tech Stack removed from database", "success");
+    }
+  };
+
+  const handleSeedDefaultTechStacks = async () => {
+    const DEFAULT_STACKS = [
+      { icon: 'html.svg', language: 'HTML' },
+      { icon: 'css.svg', language: 'CSS' },
+      { icon: 'javascript.svg', language: 'JavaScript' },
+      { icon: 'typescript.svg', language: 'TypeScript' },
+      { icon: 'php.svg', language: 'PHP' },
+      { icon: 'python.svg', language: 'Python' },
+      { icon: 'angular.svg', language: 'Angular' },
+      { icon: 'tailwind.svg', language: 'Tailwind' },
+      { icon: 'git.svg', language: 'GIT' },
+      { icon: 'mysql2.svg', language: 'MySQL' },
+      { icon: 'bootstrap.svg', language: 'Bootstrap' },
+      { icon: 'laravel.svg', language: 'Laravel' },
+      { icon: 'codeigniter.svg', language: 'Codeigniter' },
+      { icon: 'nodejs.svg', language: 'Node JS' },
+      { icon: 'laragon.svg', language: 'Laragon' },
+      { icon: 'wordpress.svg', language: 'WordPress' },
+      { icon: 'figma.svg', language: 'Figma' },
+      { icon: 'c.svg', language: 'C++' },
+    ];
+
+    const confirm = await Swal.fire({
+      title: "Import 18 Default Tech Stacks?",
+      text: "This will add all 18 default tech stacks into your database so you can manage them dynamically.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Import",
+      confirmButtonColor: "#6366f1",
+    });
+
+    if (confirm.isConfirmed) {
+      try {
+        setIsLoadingData(true);
+        for (let idx = 0; idx < DEFAULT_STACKS.length; idx++) {
+          const s = DEFAULT_STACKS[idx];
+          await addDoc(collection(db, "tech-stacks"), {
+            Name: s.language,
+            name: s.language,
+            language: s.language,
+            Icon: s.icon,
+            icon: s.icon,
+            order: idx + 1,
+            createdAt: new Date(),
+          });
+        }
+        Swal.fire("Success", "18 default tech stacks imported successfully!", "success");
+        fetchData();
+      } catch (err) {
+        Swal.fire("Error", err.message, "error");
+      } finally {
+        setIsLoadingData(false);
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#030014] text-white p-6 md:p-10">
       {/* Top Header */}
@@ -408,6 +611,16 @@ const Dashboard = () => {
         >
           <Award className="w-5 h-5" /> Certificates (
           {isLoadingData ? <Loader2 className="w-3.5 h-3.5 animate-spin inline text-indigo-200" /> : certificates.length}
+          )
+        </button>
+        <button
+          onClick={() => setActiveTab("techstacks")}
+          className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${
+            activeTab === "techstacks" ? "bg-[#6366f1] text-white" : "bg-white/5 hover:bg-white/10 text-gray-300"
+          }`}
+        >
+          <Boxes className="w-5 h-5" /> Tech Stacks (
+          {isLoadingData ? <Loader2 className="w-3.5 h-3.5 animate-spin inline text-indigo-200" /> : techStacks.length}
           )
         </button>
         <button
@@ -1028,6 +1241,254 @@ const Dashboard = () => {
               {isUploading ? "Uploading & Saving..." : "Save Changes"}
             </button>
           </form>
+        </div>
+      )}
+
+      {/* Tech Stacks Tab */}
+      {activeTab === "techstacks" && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Form Add / Edit Tech Stack */}
+          <div className="bg-white/5 p-6 rounded-2xl border border-white/10 h-fit">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                {editingTechId ? <Edit3 className="w-5 h-5 text-indigo-400" /> : <Plus className="w-5 h-5 text-[#6366f1]" />}
+                {editingTechId ? "Edit Tech Stack" : "Add New Tech Stack"}
+              </h2>
+              {editingTechId && (
+                <button
+                  type="button"
+                  onClick={handleCancelEditTechStack}
+                  className="text-xs text-amber-400 hover:text-amber-300 px-3 py-1 bg-amber-500/20 rounded-xl border border-amber-500/30 font-medium transition-all flex items-center gap-1"
+                >
+                  <X className="w-3.5 h-3.5" /> Cancel Edit
+                </button>
+              )}
+            </div>
+            <form onSubmit={handleSaveTechStack} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                  Technology / Language Name <span className="text-red-400 font-bold">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. React, Next.js, Flutter"
+                  value={newTechStack.Name}
+                  onChange={(e) => setNewTechStack({ ...newTechStack, Name: e.target.value })}
+                  className="w-full p-3 bg-white/10 rounded-xl border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-[#6366f1] focus:ring-2 focus:ring-[#6366f1]/40 transition-all text-xs"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-gray-300">
+                  Tech Stack Icon <span className="text-red-400 font-bold">*</span> (SVG, PNG, or WebP)
+                </label>
+                <div className="p-3 bg-white/5 rounded-xl border border-white/10 space-y-3">
+                  <div className={newTechStack.Icon ? "opacity-40" : ""}>
+                    <span className="block text-xs text-[#6366f1] font-medium mb-1.5">
+                      Option A: Upload File from Device (Cloudinary) {newTechStack.Icon && "(Disabled - URL filled)"}
+                    </span>
+                    {techFile ? (
+                      <div className="flex items-center justify-between p-2.5 bg-[#6366f1]/15 rounded-lg border border-[#6366f1]/40">
+                        <div className="flex items-center gap-2 overflow-hidden text-xs text-white">
+                          <FileText className="w-4 h-4 text-[#6366f1] shrink-0" />
+                          <span className="truncate font-medium">{techFile.name}</span>
+                          <span className="text-[10px] text-gray-400 shrink-0">
+                            ({(techFile.size / 1024).toFixed(0)} KB)
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setTechFile(null)}
+                          className="text-gray-400 hover:text-red-400 p-1 rounded hover:bg-white/10 transition-all shrink-0"
+                          title="Cancel file selection"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <input
+                        type="file"
+                        accept="image/*,.svg"
+                        disabled={!!newTechStack.Icon}
+                        onChange={(e) => setTechFile(e.target.files[0] || null)}
+                        className="w-full p-2 bg-white/10 rounded-lg text-xs border border-white/20 text-gray-300 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:bg-[#6366f1] file:text-white file:text-xs cursor-pointer disabled:cursor-not-allowed focus:outline-none focus:border-[#6366f1]"
+                      />
+                    )}
+                  </div>
+
+                  <div className={`pt-2 border-t border-white/10 ${techFile ? "opacity-40" : ""}`}>
+                    <span className="block text-xs text-gray-400 font-medium mb-1">
+                      Option B: Paste Icon URL / Local Path {techFile && "(Disabled - File selected)"}
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="https://... or reactjs.svg"
+                      value={newTechStack.Icon}
+                      disabled={!!techFile}
+                      onChange={(e) => setNewTechStack({ ...newTechStack, Icon: e.target.value })}
+                      className="w-full p-2.5 bg-white/10 rounded-lg border border-white/20 text-white text-xs placeholder-gray-500 focus:outline-none focus:border-[#6366f1] focus:ring-2 focus:ring-[#6366f1]/40 transition-all disabled:cursor-not-allowed"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                  Display Order / Priority <span className="text-gray-400 font-normal">(1 = Most proficient / top)</span>
+                </label>
+                <input
+                  type="number"
+                  placeholder={`e.g. ${techStacks.length + 1}`}
+                  value={newTechStack.order}
+                  onChange={(e) => setNewTechStack({ ...newTechStack, order: e.target.value })}
+                  className="w-full p-3 bg-white/10 rounded-xl border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-[#6366f1] focus:ring-2 focus:ring-[#6366f1]/40 transition-all text-xs"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isUploading}
+                className="w-full bg-gradient-to-r from-[#6366f1] to-[#a855f7] py-3 rounded-xl font-semibold hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" />}
+                {isUploading
+                  ? "Saving..."
+                  : editingTechId
+                  ? "Update Tech Stack"
+                  : "Save Tech Stack"}
+              </button>
+            </form>
+          </div>
+
+          {/* Tech Stack List */}
+          <div className="lg:col-span-2 space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white/5 p-4 rounded-2xl border border-white/10">
+              <div>
+                <h3 className="font-semibold text-white text-sm">Active Technologies</h3>
+                <p className="text-gray-400 text-xs mt-0.5">Icons will be displayed in the Tech Stack tab on your portfolio.</p>
+              </div>
+              {techStacks.length === 0 && !isLoadingData && (
+                <button
+                  onClick={handleSeedDefaultTechStacks}
+                  className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-90 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all shadow-lg hover:scale-105"
+                >
+                  <Sparkles className="w-3.5 h-3.5" /> Import 18 Defaults
+                </button>
+              )}
+            </div>
+
+            {isLoadingData ? (
+              <div className="space-y-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="bg-white/5 p-4 rounded-2xl border border-white/10 animate-pulse flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="w-12 h-12 bg-white/10 rounded-lg shrink-0" />
+                      <div className="space-y-2 flex-1">
+                        <div className="h-4 bg-white/10 rounded w-1/3" />
+                        <div className="h-3 bg-white/5 rounded w-1/4" />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="w-16 h-8 bg-white/10 rounded-xl" />
+                      <div className="w-10 h-8 bg-white/10 rounded-xl" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : techStacks.length === 0 ? (
+              <div className="p-8 text-center bg-white/5 rounded-2xl border border-white/10 space-y-3">
+                <Boxes className="w-10 h-10 text-indigo-400 mx-auto opacity-60" />
+                <p className="text-gray-400 text-sm">No custom tech stacks in database yet.</p>
+                <button
+                  onClick={handleSeedDefaultTechStacks}
+                  className="inline-flex items-center gap-1.5 bg-[#6366f1] hover:bg-[#6366f1]/80 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-all shadow-lg"
+                >
+                  <Sparkles className="w-4 h-4" /> Import 18 Default Tech Stacks Now
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {techStacks.map((tech, index) => {
+                  const iconUrl = tech.Icon || tech.icon || "";
+                  const name = tech.Name || tech.name || tech.Language || tech.language || `Tech #${index + 1}`;
+                  return (
+                    <div
+                      key={tech.id || index}
+                      className="bg-white/5 p-4 sm:p-5 rounded-2xl border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 group hover:border-[#6366f1]/40 transition-all"
+                    >
+                      <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                        <div className="w-12 h-12 rounded-xl bg-slate-800/80 border border-white/10 flex items-center justify-center p-2 shrink-0">
+                          {iconUrl ? (
+                            <img
+                              src={iconUrl}
+                              alt={name}
+                              className="w-8 h-8 object-contain"
+                              onError={(e) => {
+                                e.target.style.display = "none";
+                              }}
+                            />
+                          ) : (
+                            <Boxes className="w-6 h-6 text-gray-500" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 rounded-md bg-[#6366f1]/20 text-[#818cf8] text-xs font-semibold border border-[#6366f1]/30 shrink-0">
+                              #{index + 1}
+                            </span>
+                            <h4 className="font-bold text-base text-white truncate">{name}</h4>
+                          </div>
+                          <span className="text-xs text-gray-400 block mt-0.5">
+                            {iconUrl.startsWith("http") ? "Cloudinary Asset" : "Local SVG"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                        {/* Reorder Buttons */}
+                        <div className="flex items-center bg-white/5 rounded-xl border border-white/10 p-1 gap-0.5">
+                          <button
+                            type="button"
+                            disabled={index === 0}
+                            onClick={() => handleMoveTechStack(index, "up")}
+                            className="p-1.5 text-gray-400 hover:text-white disabled:opacity-20 disabled:hover:text-gray-400 hover:bg-white/10 rounded-lg transition-all"
+                            title="Move Up (Higher Priority)"
+                          >
+                            <ArrowUp className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={index === techStacks.length - 1}
+                            onClick={() => handleMoveTechStack(index, "down")}
+                            className="p-1.5 text-gray-400 hover:text-white disabled:opacity-20 disabled:hover:text-gray-400 hover:bg-white/10 rounded-lg transition-all"
+                            title="Move Down (Lower Priority)"
+                          >
+                            <ArrowDown className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        <button
+                          onClick={() => handleStartEditTechStack(tech, index)}
+                          className="bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 px-3 py-2 rounded-xl border border-indigo-500/30 transition-all flex items-center gap-1.5 text-xs font-medium"
+                          title="Edit Tech Stack"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Edit</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTechStack(tech)}
+                          className="bg-red-500/20 hover:bg-red-500/30 text-red-400 p-2 rounded-xl border border-red-500/30 transition-all"
+                          title="Delete Tech Stack"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

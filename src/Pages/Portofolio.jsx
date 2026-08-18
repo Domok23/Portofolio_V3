@@ -99,32 +99,30 @@ function a11yProps(index) {
   };
 }
 
-const techStacks = [
-  { icon: 'html.svg', language: 'HTML' },
-  { icon: 'css.svg', language: 'CSS' },
-  { icon: 'javascript.svg', language: 'JavaScript' },
-  { icon: 'typescript.svg', language: 'TypeScript' },
-  { icon: 'php.svg', language: 'PHP' },
-  { icon: 'python.svg', language: 'Python' },
-  { icon: 'angular.svg', language: 'Angular' },
-  { icon: 'tailwind.svg', language: 'Tailwind' },
-  { icon: 'git.svg', language: 'GIT' },
-  { icon: 'mysql2.svg', language: 'MySQL' },
-  { icon: 'bootstrap.svg', language: 'Bootstrap' },
-  { icon: 'laravel.svg', language: 'Laravel' },
-  { icon: 'codeigniter.svg', language: 'Codeigniter' },
-  { icon: 'nodejs.svg', language: 'Node JS' },
-  { icon: 'laragon.svg', language: 'Laragon' },
-  { icon: 'wordpress.svg', language: 'WordPress' },
-  { icon: 'figma.svg', language: 'Figma' },
-  { icon: 'c.svg', language: 'C++' },
-];
-
 export default function FullWidthTabs() {
   const theme = useTheme();
   const [value, setValue] = useState(0);
   const [projects, setProjects] = useState([]);
   const [certificates, setCertificates] = useState([]);
+  const parseTechOrder = (tech, fallback = 999) => {
+    if (tech?.order !== undefined && tech?.order !== null && !isNaN(Number(tech.order))) {
+      return Number(tech.order);
+    }
+    return fallback;
+  };
+
+  const [techStacks, setTechStacks] = useState(() => {
+    const saved = localStorage.getItem("techStacks");
+    if (!saved) return [];
+    try {
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed)
+        ? parsed.sort((a, b) => parseTechOrder(a) - parseTechOrder(b))
+        : [];
+    } catch {
+      return [];
+    }
+  });
   const [showAllProjects, setShowAllProjects] = useState(false);
   const [showAllCertificates, setShowAllCertificates] = useState(false);
   const isMobile = window.innerWidth < 768;
@@ -163,10 +161,12 @@ export default function FullWidthTabs() {
     try {
       const projectCollection = collection(db, "projects");
       const certificateCollection = collection(db, "certificates");
+      const techCollection = collection(db, "tech-stacks");
 
-      const [projectSnapshot, certificateSnapshot] = await Promise.all([
+      const [projectSnapshot, certificateSnapshot, techSnapshot] = await Promise.all([
         getDocs(projectCollection),
         getDocs(certificateCollection),
+        getDocs(techCollection),
       ]);
 
       const projectData = projectSnapshot.docs.map((doc) => ({
@@ -179,12 +179,21 @@ export default function FullWidthTabs() {
         .map((doc) => ({ id: doc.id, ...doc.data() }))
         .sort((a, b) => parseCertificateDate(b) - parseCertificateDate(a));
 
+      const techData = techSnapshot.docs
+        .map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+        .sort((a, b) => parseTechOrder(a) - parseTechOrder(b));
+
       setProjects(projectData);
       setCertificates(certificateData);
+      setTechStacks(techData);
 
       // Store in localStorage
       localStorage.setItem("projects", JSON.stringify(projectData));
       localStorage.setItem("certificates", JSON.stringify(certificateData));
+      localStorage.setItem("techStacks", JSON.stringify(techData));
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -378,11 +387,14 @@ export default function FullWidthTabs() {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 lg:gap-8 gap-5">
                 {techStacks.map((stack, index) => (
                   <div
-                    key={index}
+                    key={stack.id || index}
                     data-aos={index % 3 === 0 ? "fade-up-right" : index % 3 === 1 ? "fade-up" : "fade-up-left"}
                     data-aos-duration={index % 3 === 0 ? "1000" : index % 3 === 1 ? "1200" : "1000"}
                   >
-                    <TechStackIcon TechStackIcon={stack.icon} Language={stack.language} />
+                    <TechStackIcon 
+                      TechStackIcon={stack.Icon || stack.icon} 
+                      Language={stack.Name || stack.name || stack.Language || stack.language} 
+                    />
                   </div>
                 ))}
               </div>
