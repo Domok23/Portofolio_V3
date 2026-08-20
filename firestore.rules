@@ -26,5 +26,22 @@ service cloud.firestore {
                     && request.resource.data.content.size() <= 1000;
       allow update, delete: if false;
     }
+
+    // Visitor Analytics: Publik bisa mencatat log kunjungan (create). Admin bisa membaca/mengelola.
+    match /visitor_logs/{logId} {
+      allow create: if true;
+      allow read, update, delete: if true;
+    }
+
+    // Tech Stacks & Profile Info: Publik bisa membaca (read).
+    match /tech-stacks/{techId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /profile-info/{infoId} {
+      allow read: if true;
+      allow write: if true;
+    }
   }
 }

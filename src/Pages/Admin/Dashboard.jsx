@@ -4,7 +4,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { db, collection, addDoc, getDocs, doc, getDoc } from "../../firebase";
 import { deleteDoc, updateDoc, setDoc } from "firebase/firestore";
 import Swal from "sweetalert2";
-import { LogOut, FolderPlus, Award, User, Trash2, Plus, Edit3, Upload, Loader2, FileText, X, ExternalLink, Github, ChevronDown, ChevronUp, Star, Boxes, Sparkles, ArrowUp, ArrowDown, Image as ImageIcon, Check } from "lucide-react";
+import { LogOut, FolderPlus, Award, User, Trash2, Plus, Edit3, Upload, Loader2, FileText, X, ExternalLink, Github, ChevronDown, ChevronUp, Star, Boxes, Sparkles, ArrowUp, ArrowDown, Image as ImageIcon, Check, BarChart3 } from "lucide-react";
+import AnalyticsTab from "../../components/Admin/AnalyticsTab";
 
 const Dashboard = () => {
   const { logout, currentUser } = useAuth();
@@ -780,6 +781,14 @@ const Dashboard = () => {
           }`}
         >
           <User className="w-5 h-5" /> Profile & Stats
+        </button>
+        <button
+          onClick={() => setActiveTab("analytics")}
+          className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${
+            activeTab === "analytics" ? "bg-[#6366f1] text-white" : "bg-white/5 hover:bg-white/10 text-gray-300"
+          }`}
+        >
+          <BarChart3 className="w-5 h-5 text-indigo-300" /> Analytics
         </button>
       </div>
 
@@ -1762,6 +1771,9 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Analytics Tab */}
+      {activeTab === "analytics" && <AnalyticsTab />}
     </div>
   );
 };

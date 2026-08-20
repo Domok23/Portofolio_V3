@@ -12,6 +12,18 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./Pages/Admin/Login";
 import Dashboard from "./Pages/Admin/Dashboard";
+import { trackPageView } from "./utils/analytics";
+
+const RouteTracker = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const fullPath = location.pathname + (location.hash || "");
+    trackPageView(fullPath);
+  }, [location]);
+
+  return null;
+};
 
 const LandingPage = () => {
   const location = useLocation();
@@ -81,6 +93,7 @@ function App() {
   return (
     <AuthProvider>
       <HashRouter>
+        <RouteTracker />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/project/:id" element={<ProjectPageLayout />} />
