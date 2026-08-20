@@ -2,11 +2,18 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft, ExternalLink, Github, Code2, Star,
-  ChevronRight, Layers, Layout, Globe, Package, Cpu, Code,
+  ChevronRight, ChevronLeft, Image as ImageIcon, Maximize2, Layers, Layout, Globe, Package, Cpu, Code,
   Database, Server, Terminal, Flame, Smartphone, Cloud, FileCode, Wrench
 } from "lucide-react";
 import Swal from 'sweetalert2';
 import { db, doc, getDoc } from "../firebase";
+
+import Lightbox from "yet-another-react-lightbox";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
+import Fullscreen from "yet-another-react-lightbox/plugins/fullscreen";
+import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
+import "yet-another-react-lightbox/styles.css";
+import "yet-another-react-lightbox/plugins/thumbnails.css";
 
 const TECH_ICONS_MAP = {
   // Languages
@@ -145,22 +152,32 @@ const ProjectDetails = () => {
   const [project, setProject] = useState(null);
   const [notFound, setNotFound] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
-    const enhance = (data) => ({
-      ...data,
-      Features: data.Features || [],
-      TechStack: data.TechStack || [],
-      Github: data.Github || "https://github.com/Domok23",
-    });
+    const enhance = (data) => {
+      const rawImages = Array.isArray(data.Images) && data.Images.length > 0
+        ? data.Images
+        : (data.Img ? [data.Img] : []);
+      return {
+        ...data,
+        Features: data.Features || [],
+        TechStack: data.TechStack || [],
+        Github: data.Github || "https://github.com/Domok23",
+        Images: rawImages,
+        Img: data.Img || (rawImages[0] || ""),
+      };
+    };
 
     const loadProject = async () => {
       window.scrollTo(0, 0);
       setProject(null);
       setNotFound(false);
       setIsImageLoaded(false);
+      setSelectedImageIndex(0);
 
       if (!id) {
         setNotFound(true);
@@ -326,17 +343,149 @@ const ProjectDetails = () => {
             </div>
 
             <div className="space-y-6 md:space-y-10 animate-slideInRight">
-              <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl group">
-              
-                <div className="absolute inset-0 bg-gradient-to-t from-[#030014] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <img
-                  src={project.Img}
-                  alt={project.Title}
-                  className="w-full  object-cover transform transition-transform duration-700 will-change-transform group-hover:scale-105"
-                  onLoad={() => setIsImageLoaded(true)}
-                />
-                <div className="absolute inset-0 border-2 border-white/0 group-hover:border-white/10 transition-colors duration-300 rounded-2xl" />
-              </div>
+              {/* Image Gallery / Carousel */}
+              {(() => {
+                const projectImages = Array.isArray(project.Images) && project.Images.length > 0
+                  ? project.Images
+                  : (project.Img ? [project.Img] : []);
+                const currentImage = projectImages[selectedImageIndex] || project.Img;
+                const hasMultiple = projectImages.length > 1;
+
+                const handlePrev = (e) => {
+                  e.stopPropagation();
+                  setSelectedImageIndex((prev) => (prev - 1 + projectImages.length) % projectImages.length);
+                };
+
+                const handleNext = (e) => {
+                  e.stopPropagation();
+                  setSelectedImageIndex((prev) => (prev + 1) % projectImages.length);
+                };
+
+                return (
+                  <div className="space-y-3">
+                    {/* Main Image Showcase */}
+                    <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl group bg-black/40">
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#030014]/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10" />
+                      
+                      {/* Fullscreen Button */}
+                      <button
+                        type="button"
+                        onClick={() => setIsLightboxOpen(true)}
+                        className="absolute top-3 left-3 z-20 px-3 py-1 rounded-full bg-black/60 hover:bg-black/85 backdrop-blur-md border border-white/20 text-[11px] font-medium text-white/95 flex items-center gap-1.5 shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
+                        title="View Fullscreen & Zoom"
+                      >
+                        <Maximize2 className="w-3.5 h-3.5 text-blue-400" />
+                        <span>Fullscreen</span>
+                      </button>
+
+                      {/* Active Image (Click to open Fullscreen) */}
+                      <div 
+                        onClick={() => setIsLightboxOpen(true)}
+                        className="relative w-full aspect-video sm:aspect-[16/10] overflow-hidden flex items-center justify-center bg-black/60 cursor-zoom-in"
+                        title="Click to view image fullscreen"
+                      >
+                        <img
+                          key={currentImage}
+                          src={currentImage}
+                          alt={`${project.Title} - photo ${selectedImageIndex + 1}`}
+                          className="w-full h-full object-cover transform transition-transform duration-700 will-change-transform group-hover:scale-105"
+                          onLoad={() => setIsImageLoaded(true)}
+                        />
+                      </div>
+
+                      {/* Photo Counter Badge */}
+                      {hasMultiple && (
+                        <div className="absolute top-3 right-3 z-20 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-[11px] font-medium text-white/90 flex items-center gap-1.5 shadow-lg">
+                          <ImageIcon className="w-3.5 h-3.5 text-blue-400" />
+                          <span>{selectedImageIndex + 1} / {projectImages.length}</span>
+                        </div>
+                      )}
+
+                      {/* Navigation Arrows for Carousel */}
+                      {hasMultiple && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={handlePrev}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/50 hover:bg-black/80 backdrop-blur-md border border-white/15 text-white/80 hover:text-white transition-all duration-200 opacity-80 group-hover:opacity-100 hover:scale-110 active:scale-95"
+                            title="Previous image"
+                          >
+                            <ChevronLeft className="w-5 h-5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleNext}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/50 hover:bg-black/80 backdrop-blur-md border border-white/15 text-white/80 hover:text-white transition-all duration-200 opacity-80 group-hover:opacity-100 hover:scale-110 active:scale-95"
+                            title="Next image"
+                          >
+                            <ChevronRight className="w-5 h-5" />
+                          </button>
+                        </>
+                      )}
+
+                      {/* Carousel Indicator Dots */}
+                      {hasMultiple && (
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/50 backdrop-blur-md border border-white/10">
+                          {projectImages.map((_, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => setSelectedImageIndex(idx)}
+                              className={`h-1.5 rounded-full transition-all duration-300 ${
+                                selectedImageIndex === idx
+                                  ? "w-5 bg-gradient-to-r from-blue-400 to-purple-400"
+                                  : "w-1.5 bg-white/40 hover:bg-white/70"
+                              }`}
+                              title={`Go to photo ${idx + 1}`}
+                            />
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="absolute inset-0 border-2 border-white/0 group-hover:border-white/10 transition-colors duration-300 rounded-2xl pointer-events-none" />
+                    </div>
+
+                    {/* Thumbnail Strip */}
+                    {hasMultiple && (
+                      <div className="flex items-center gap-2.5 overflow-x-auto pb-1.5 pt-1 px-0.5 scrollbar-thin scrollbar-thumb-white/10">
+                        {projectImages.map((imgUrl, idx) => {
+                          const isActive = selectedImageIndex === idx;
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => setSelectedImageIndex(idx)}
+                              className={`relative rounded-xl overflow-hidden border-2 transition-all duration-300 shrink-0 w-20 h-14 sm:w-24 sm:h-16 ${
+                                isActive
+                                  ? "border-blue-500 ring-2 ring-blue-500/40 scale-105 shadow-lg shadow-blue-500/20"
+                                  : "border-white/10 hover:border-white/30 opacity-60 hover:opacity-100"
+                              }`}
+                            >
+                              <img
+                                src={imgUrl}
+                                alt={`Thumbnail ${idx + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Lightbox Component for Fullscreen & Zoom */}
+                    <Lightbox
+                      open={isLightboxOpen}
+                      close={() => setIsLightboxOpen(false)}
+                      index={selectedImageIndex}
+                      slides={projectImages.map((src) => ({ src }))}
+                      plugins={[Zoom, Fullscreen, Thumbnails]}
+                      on={{
+                        view: ({ index }) => setSelectedImageIndex(index),
+                      }}
+                    />
+                  </div>
+                );
+              })()}
 
               {/* Fitur Utama */}
               <div className="bg-white/[0.02] backdrop-blur-xl rounded-2xl p-8 border border-white/10 space-y-6 hover:border-white/20 transition-colors duration-300 group">
@@ -359,7 +508,7 @@ const ProjectDetails = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes blob {
           0% {
             transform: translate(0px, 0px) scale(1);

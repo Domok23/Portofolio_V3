@@ -1,8 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink, ArrowRight } from 'lucide-react';
+import { ExternalLink, ArrowRight, Image as ImageIcon } from 'lucide-react';
 
-const CardProject = ({ Img, Title, Description, Link: ProjectLink, id }) => {
+const CardProject = ({ Img, Images, Title, Description, Link: ProjectLink, id }) => {
+  const photoCount = Array.isArray(Images) && Images.length > 1 ? Images.length : 0;
+
   // Handle kasus ketika ProjectLink kosong
   const handleLiveDemo = (e) => {
     if (!ProjectLink) {
@@ -22,33 +24,41 @@ const CardProject = ({ Img, Title, Description, Link: ProjectLink, id }) => {
   
 
   return (
-    <div className="group relative w-full">
-            
-      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-lg border border-white/10 shadow-2xl transition-all duration-300 hover:shadow-purple-500/20">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 opacity-50 group-hover:opacity-70 transition-opacity duration-300"></div>
+    <div className="group relative w-full h-full flex flex-col">
+      <div className="relative flex flex-col justify-between h-full overflow-hidden rounded-xl bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-lg border border-white/10 shadow-2xl transition-all duration-300 hover:shadow-purple-500/20">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 opacity-50 group-hover:opacity-70 transition-opacity duration-300 pointer-events-none"></div>
     
-        <div className="relative p-5 z-10">
-          <div className="relative overflow-hidden rounded-lg">
+        <div className="relative p-5 z-10 flex flex-col justify-between flex-1">
+          {/* Image Container with Fixed Uniform Aspect Ratio */}
+          <div className="relative overflow-hidden rounded-lg aspect-video w-full bg-slate-950/60 shrink-0 border border-white/5">
             <img
               src={Img}
               alt={Title}
-              className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+              className="w-full h-full object-cover object-top transform group-hover:scale-105 transition-transform duration-500"
             />
+            {photoCount > 1 && (
+              <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md border border-white/15 text-[10px] font-medium text-white/90 flex items-center gap-1 shadow-md">
+                <ImageIcon className="w-3 h-3 text-blue-400" />
+                <span>{photoCount} Photos</span>
+              </div>
+            )}
           </div>
           
-          <div className="mt-4 space-y-3">
-            <h3 className="text-xl font-semibold bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 bg-clip-text text-transparent">
-              {Title}
-            </h3>
+          <div className="mt-4 flex-1 flex flex-col justify-between space-y-3">
+            <div>
+              <h3 className="text-xl font-semibold bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 bg-clip-text text-transparent line-clamp-1">
+                {Title}
+              </h3>
+              
+              <p className="text-gray-300/80 text-sm leading-relaxed line-clamp-2 mt-2">
+                {Description}
+              </p>
+            </div>
             
-            <p className="text-gray-300/80 text-sm leading-relaxed line-clamp-2">
-              {Description}
-            </p>
-            
-            <div className="pt-4 flex items-center justify-between">
+            <div className="pt-4 flex items-center justify-between border-t border-white/5 mt-auto">
               {ProjectLink ? (
                 <a
-                href={ProjectLink || "#"}
+                  href={ProjectLink || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={handleLiveDemo}
@@ -60,8 +70,6 @@ const CardProject = ({ Img, Title, Description, Link: ProjectLink, id }) => {
               ) : (
                 <span className="text-gray-500 text-sm">Demo Not Available</span>
               )}
-              
-     
 
               {id ? (
                 <Link
@@ -78,7 +86,7 @@ const CardProject = ({ Img, Title, Description, Link: ProjectLink, id }) => {
             </div>
           </div>
           
-          <div className="absolute inset-0 border border-white/0 group-hover:border-purple-500/50 rounded-xl transition-colors duration-300 -z-50"></div>
+          <div className="absolute inset-0 border border-white/0 group-hover:border-purple-500/50 rounded-xl transition-colors duration-300 pointer-events-none -z-50"></div>
         </div>
       </div>
     </div>

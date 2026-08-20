@@ -4,7 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { db, collection, addDoc, getDocs, doc, getDoc } from "../../firebase";
 import { deleteDoc, updateDoc, setDoc } from "firebase/firestore";
 import Swal from "sweetalert2";
-import { LogOut, FolderPlus, Award, User, Trash2, Plus, Edit3, Upload, Loader2, FileText, X, ExternalLink, Github, ChevronDown, ChevronUp, Star, Boxes, Sparkles, ArrowUp, ArrowDown } from "lucide-react";
+import { LogOut, FolderPlus, Award, User, Trash2, Plus, Edit3, Upload, Loader2, FileText, X, ExternalLink, Github, ChevronDown, ChevronUp, Star, Boxes, Sparkles, ArrowUp, ArrowDown, Image as ImageIcon, Check } from "lucide-react";
 
 const Dashboard = () => {
   const { logout, currentUser } = useAuth();
@@ -47,11 +47,16 @@ const Dashboard = () => {
     Title: "",
     Description: "",
     Img: "",
+    Images: [],
     Link: "",
     Github: "",
     TechStack: "",
     Features: "",
+    createdAt: "",
   });
+
+  const [projectFiles, setProjectFiles] = useState([]);
+  const [customImageUrlInput, setCustomImageUrlInput] = useState("");
 
   const formatMonthYear = (monthString) => {
     if (!monthString) return "";
@@ -71,6 +76,53 @@ const Dashboard = () => {
     return `${year}-${month}`;
   };
 
+  const parseToDateInputValue = (dateVal) => {
+    if (!dateVal) return "";
+    if (typeof dateVal === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateVal)) return dateVal;
+    if (typeof dateVal?.toDate === "function") {
+      const d = dateVal.toDate();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+    const d = new Date(dateVal);
+    if (!isNaN(d.getTime())) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+    return "";
+  };
+
+  const parseProjectDate = (proj) => {
+    if (!proj) return 0;
+    if (proj.createdAt) {
+      if (typeof proj.createdAt.toDate === "function") return proj.createdAt.toDate().getTime();
+      if (proj.createdAt instanceof Date) return proj.createdAt.getTime();
+      const parsed = Date.parse(proj.createdAt);
+      if (!isNaN(parsed)) return parsed;
+      if (typeof proj.createdAt === "number") return proj.createdAt;
+    }
+    if (proj.Date || proj.date) {
+      const parsed = Date.parse(proj.Date || proj.date);
+      if (!isNaN(parsed)) return parsed;
+    }
+    return 0;
+  };
+
+  const sortProjectsDescending = (items) => {
+    return [...items].sort((a, b) => {
+      const timeA = parseProjectDate(a);
+      const timeB = parseProjectDate(b);
+      if (timeA && timeB) return timeB - timeA;
+      if (timeA && !timeB) return -1;
+      if (!timeA && timeB) return 1;
+      return (a.Title || "").localeCompare(b.Title || "");
+    });
+  };
+
   const parseCertificateDate = (cert) => {
     if (cert.Date) {
       const parsed = Date.parse(cert.Date.includes(" ") ? `1 ${cert.Date}` : cert.Date);
@@ -78,10 +130,21 @@ const Dashboard = () => {
     }
     if (cert.createdAt) {
       if (typeof cert.createdAt.toDate === "function") return cert.createdAt.toDate().getTime();
-      const created = new Date(cert.createdAt).getTime();
-      if (!isNaN(created)) return created;
+      const parsed = Date.parse(cert.createdAt);
+      if (!isNaN(parsed)) return parsed;
     }
     return 0;
+  };
+
+  const sortCertificatesDescending = (items) => {
+    return [...items].sort((a, b) => {
+      const timeA = parseCertificateDate(a);
+      const timeB = parseCertificateDate(b);
+      if (timeA && timeB) return timeB - timeA;
+      if (timeA && !timeB) return -1;
+      if (!timeA && timeB) return 1;
+      return (a.Title || "").localeCompare(b.Title || "");
+    });
   };
 
   useEffect(() => {
@@ -98,34 +161,43 @@ const Dashboard = () => {
   const fetchData = async () => {
     try {
       setIsLoadingData(true);
-      // Projects
       const projSnap = await getDocs(collection(db, "projects"));
-      setProjects(projSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
-
-      // Certificates (sorted by issue date newest first)
       const certSnap = await getDocs(collection(db, "certificates"));
-      const sortedCerts = certSnap.docs
-        .map((d) => ({ id: d.id, ...d.data() }))
-        .sort((a, b) => parseCertificateDate(b) - parseCertificateDate(a));
-      setCertificates(sortedCerts);
-
-      // Tech Stacks (sorted by order)
       const techSnap = await getDocs(collection(db, "tech-stacks"));
-      const sortedTech = techSnap.docs
-        .map((d) => ({ id: d.id, ...d.data() }))
-        .sort((a, b) => parseTechOrder(a) - parseTechOrder(b));
-      setTechStacks(sortedTech);
 
-      // Profile info
-      const profRef = doc(db, "profile-info", "main");
-      const profSnap = await getDoc(profRef);
-      if (profSnap.exists()) {
-        const data = profSnap.data();
-        setProfileInfo((prev) => ({
-          ...prev,
-          ...data,
-          cvUrl: data.cvUrl || DEFAULT_CV_URL,
-        }));
+      const projectsData = projSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      const certificatesData = certSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      const techData = techSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+      techData.sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
+
+      setProjects(sortProjectsDescending(projectsData));
+      setCertificates(sortCertificatesDescending(certificatesData));
+      setTechStacks(techData);
+
+      // Fetch Profile Info
+      try {
+        const profileDoc = await getDoc(doc(db, "profile-info", "main"));
+        if (profileDoc.exists()) {
+          const pData = profileDoc.data();
+          const loadedProfile = {
+            expYears: pData.expYears ?? 3,
+            projectsCompleted: pData.projectsCompleted ?? 68,
+            bio: pData.bio || "",
+            cvUrl: pData.cvUrl || DEFAULT_CV_URL,
+          };
+          setProfileInfo(loadedProfile);
+        } else {
+          const defaultProf = {
+            expYears: 3,
+            projectsCompleted: 68,
+            bio: "",
+            cvUrl: DEFAULT_CV_URL,
+          };
+          setProfileInfo(defaultProf);
+        }
+      } catch (profErr) {
+        console.error("Error loading profile data:", profErr);
       }
     } catch (err) {
       console.error("Error fetching admin data:", err);
@@ -134,7 +206,6 @@ const Dashboard = () => {
     }
   };
 
-  const [projectFile, setProjectFile] = useState(null);
   const [certFile, setCertFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -163,21 +234,82 @@ const Dashboard = () => {
     navigate("/login");
   };
 
+  const handleAddCustomImageUrl = () => {
+    const trimmed = customImageUrlInput.trim();
+    if (!trimmed) return;
+    const currentImages = Array.isArray(newProject.Images) && newProject.Images.length > 0
+      ? [...newProject.Images]
+      : (newProject.Img ? [newProject.Img] : []);
+    
+    if (!currentImages.includes(trimmed)) {
+      const nextImages = [...currentImages, trimmed];
+      setNewProject({
+        ...newProject,
+        Images: nextImages,
+        Img: newProject.Img || trimmed,
+      });
+    }
+    setCustomImageUrlInput("");
+  };
+
+  const handleRemoveExistingImage = (urlToRemove) => {
+    const currentImages = Array.isArray(newProject.Images) && newProject.Images.length > 0
+      ? [...newProject.Images]
+      : (newProject.Img ? [newProject.Img] : []);
+    const updated = currentImages.filter((u) => u !== urlToRemove);
+    const newPrimary = newProject.Img === urlToRemove ? (updated[0] || "") : newProject.Img;
+    setNewProject({
+      ...newProject,
+      Images: updated,
+      Img: newPrimary,
+    });
+  };
+
+  const handleSetPrimaryImage = (url) => {
+    setNewProject((prev) => ({
+      ...prev,
+      Img: url,
+    }));
+  };
+
+  const handleAddProjectFiles = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      setProjectFiles((prev) => [...prev, ...files]);
+    }
+    e.target.value = "";
+  };
+
+  const handleRemoveSelectedFile = (index) => {
+    setProjectFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSaveProject = async (e) => {
     e.preventDefault();
     try {
       setIsUploading(true);
-      let imgUrl = newProject.Img;
-      let deleteUrl = newProject.deleteUrl || "";
 
-      if (projectFile) {
-        imgUrl = await uploadToCloudinary(projectFile);
-        deleteUrl = "";
+      const existingImages = Array.isArray(newProject.Images) && newProject.Images.length > 0
+        ? [...newProject.Images]
+        : (newProject.Img ? [newProject.Img] : []);
+
+      let uploadedUrls = [];
+      if (projectFiles.length > 0) {
+        uploadedUrls = await Promise.all(
+          projectFiles.map((file) => uploadToCloudinary(file))
+        );
       }
 
-      if (!imgUrl) {
-        throw new Error("Please select an image file or enter an image URL.");
+      let allImages = [...existingImages, ...uploadedUrls].filter(Boolean);
+      allImages = Array.from(new Set(allImages));
+
+      if (allImages.length === 0) {
+        throw new Error("Please upload at least one image or enter an image URL.");
       }
+
+      const primaryImg = (newProject.Img && allImages.includes(newProject.Img))
+        ? newProject.Img
+        : allImages[0];
 
       const techArray = typeof newProject.TechStack === "string" 
         ? newProject.TechStack.split(",").map((s) => s.trim()).filter(Boolean) 
@@ -186,15 +318,27 @@ const Dashboard = () => {
         ? newProject.Features.split(",").map((s) => s.trim()).filter(Boolean) 
         : (newProject.Features || []);
 
+      let finalCreatedAt = new Date();
+      if (newProject.createdAt) {
+        const [y, m, d] = newProject.createdAt.split("-");
+        if (y && m && d) {
+          finalCreatedAt = new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(d, 10), 12, 0, 0);
+        } else {
+          finalCreatedAt = new Date(newProject.createdAt);
+        }
+      }
+
       const projectData = {
         Title: newProject.Title,
         Description: newProject.Description,
-        Img: imgUrl,
+        Img: primaryImg,
+        Images: allImages,
         Link: newProject.Link || "",
         Github: newProject.Github || "",
-        deleteUrl: deleteUrl || "",
+        deleteUrl: newProject.deleteUrl || "",
         TechStack: techArray,
         Features: featArray,
+        createdAt: finalCreatedAt,
       };
 
       if (editingProjectId) {
@@ -202,15 +346,13 @@ const Dashboard = () => {
         Swal.fire("Saved", "Project updated successfully!", "success");
         setEditingProjectId(null);
       } else {
-        await addDoc(collection(db, "projects"), {
-          ...projectData,
-          createdAt: new Date(),
-        });
+        await addDoc(collection(db, "projects"), projectData);
         Swal.fire("Saved", "Project added successfully!", "success");
       }
 
-      setNewProject({ Title: "", Description: "", Img: "", Link: "", Github: "", TechStack: "", Features: "", deleteUrl: "" });
-      setProjectFile(null);
+      setNewProject({ Title: "", Description: "", Img: "", Images: [], Link: "", Github: "", TechStack: "", Features: "", deleteUrl: "", createdAt: "" });
+      setProjectFiles([]);
+      setCustomImageUrlInput("");
       fetchData();
     } catch (err) {
       Swal.fire("Error", err.message, "error");
@@ -221,24 +363,32 @@ const Dashboard = () => {
 
   const handleStartEditProject = (project) => {
     setEditingProjectId(project.id);
+    const existingImages = Array.isArray(project.Images) && project.Images.length > 0 
+      ? project.Images 
+      : (project.Img ? [project.Img] : []);
+    
     setNewProject({
       Title: project.Title || "",
       Description: project.Description || "",
-      Img: project.Img || "",
+      Img: project.Img || (existingImages[0] || ""),
+      Images: existingImages,
       Link: project.Link || "",
       Github: project.Github || "",
       TechStack: Array.isArray(project.TechStack) ? project.TechStack.join(", ") : (project.TechStack || ""),
       Features: Array.isArray(project.Features) ? project.Features.join(", ") : (project.Features || ""),
       deleteUrl: project.deleteUrl || "",
+      createdAt: parseToDateInputValue(project.createdAt || project.Date || project.date),
     });
-    setProjectFile(null);
+    setProjectFiles([]);
+    setCustomImageUrlInput("");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleCancelEditProject = () => {
     setEditingProjectId(null);
-    setNewProject({ Title: "", Description: "", Img: "", Link: "", Github: "", TechStack: "", Features: "", deleteUrl: "" });
-    setProjectFile(null);
+    setNewProject({ Title: "", Description: "", Img: "", Images: [], Link: "", Github: "", TechStack: "", Features: "", deleteUrl: "", createdAt: "" });
+    setProjectFiles([]);
+    setCustomImageUrlInput("");
   };
 
   const handleDeleteProject = async (project) => {
@@ -681,57 +831,127 @@ const Dashboard = () => {
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-xs font-semibold text-gray-300">
-                  Project Image <span className="text-red-400 font-bold">*</span> (Choose one option)
-                </label>
-                <div className="p-3 bg-white/5 rounded-xl border border-white/10 space-y-3">
-                  <div className={newProject.Img ? "opacity-40" : ""}>
-                    <span className="block text-xs text-[#6366f1] font-medium mb-1.5">
-                      Option A: Upload File from Device (Cloudinary) {newProject.Img && "(Disabled - URL filled)"}
-                    </span>
-                    {projectFile ? (
-                      <div className="flex items-center justify-between p-2.5 bg-[#6366f1]/15 rounded-lg border border-[#6366f1]/40">
-                        <div className="flex items-center gap-2 overflow-hidden text-xs text-white">
-                          <FileText className="w-4 h-4 text-[#6366f1] shrink-0" />
-                          <span className="truncate font-medium">{projectFile.name}</span>
-                          <span className="text-[10px] text-gray-400 shrink-0">
-                            ({(projectFile.size / 1024).toFixed(0)} KB)
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setProjectFile(null)}
-                          className="text-gray-400 hover:text-red-400 p-1 rounded hover:bg-white/10 transition-all shrink-0"
-                          title="Cancel file selection"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <input
-                        type="file"
-                        accept="image/*"
-                        disabled={!!newProject.Img}
-                        onChange={(e) => setProjectFile(e.target.files[0] || null)}
-                        className="w-full p-2 bg-white/10 rounded-lg text-xs border border-white/20 text-gray-300 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:bg-[#6366f1] file:text-white file:text-xs cursor-pointer disabled:cursor-not-allowed focus:outline-none focus:border-[#6366f1]"
-                      />
-                    )}
-                  </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-semibold text-gray-300">
+                    Project Images <span className="text-red-400 font-bold">*</span> (Upload or add URL)
+                  </label>
+                  <span className="text-[10px] text-gray-400">
+                    {(Array.isArray(newProject.Images) ? newProject.Images.length : (newProject.Img ? 1 : 0)) + projectFiles.length} photo(s) selected
+                  </span>
+                </div>
 
-                  <div className={`pt-2 border-t border-white/10 ${projectFile ? "opacity-40" : ""}`}>
-                    <span className="block text-xs text-gray-400 font-medium mb-1">
-                      Option B: Paste Image Link / URL {projectFile && "(Disabled - File selected)"}
+                <div className="p-3.5 bg-white/5 rounded-xl border border-white/10 space-y-3.5">
+                  {/* Upload Multiple Files */}
+                  <div>
+                    <span className="block text-xs text-[#6366f1] font-medium mb-1.5 flex items-center gap-1.5">
+                      <Upload className="w-3.5 h-3.5" /> Option A: Upload Files from Device (Multiple)
                     </span>
                     <input
-                      type="text"
-                      placeholder="https://... or /projects/image.png"
-                      value={newProject.Img}
-                      disabled={!!projectFile}
-                      onChange={(e) => setNewProject({ ...newProject, Img: e.target.value })}
-                      className="w-full p-2.5 bg-white/10 rounded-lg border border-white/20 text-white text-xs placeholder-gray-500 focus:outline-none focus:border-[#6366f1] focus:ring-2 focus:ring-[#6366f1]/40 transition-all disabled:cursor-not-allowed"
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleAddProjectFiles}
+                      className="w-full p-2 bg-white/10 rounded-lg text-xs border border-white/20 text-gray-300 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:bg-[#6366f1] file:text-white file:text-xs cursor-pointer focus:outline-none focus:border-[#6366f1]"
                     />
                   </div>
+
+                  {/* Add URL */}
+                  <div className="pt-2.5 border-t border-white/10">
+                    <span className="block text-xs text-gray-400 font-medium mb-1.5 flex items-center gap-1.5">
+                      <ImageIcon className="w-3.5 h-3.5" /> Option B: Add Image Link / URL
+                    </span>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="https://... or /projects/image.png"
+                        value={customImageUrlInput}
+                        onChange={(e) => setCustomImageUrlInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddCustomImageUrl();
+                          }
+                        }}
+                        className="flex-1 p-2 bg-white/10 rounded-lg border border-white/20 text-white text-xs placeholder-gray-500 focus:outline-none focus:border-[#6366f1] focus:ring-2 focus:ring-[#6366f1]/40 transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddCustomImageUrl}
+                        className="px-3 py-2 bg-[#6366f1] hover:bg-[#5558e6] text-white rounded-lg text-xs font-medium transition-all shrink-0 flex items-center gap-1"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> Add
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Selected / Existing Images Gallery */}
+                  {((Array.isArray(newProject.Images) && newProject.Images.length > 0) || (newProject.Img) || projectFiles.length > 0) && (
+                    <div className="pt-3 border-t border-white/10 space-y-2">
+                      <span className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider">
+                        Attached Images (Click star to set Cover):
+                      </span>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-52 overflow-y-auto pr-1">
+                        {/* Existing Saved URLs */}
+                        {(Array.isArray(newProject.Images) && newProject.Images.length > 0 
+                          ? newProject.Images 
+                          : (newProject.Img ? [newProject.Img] : [])
+                        ).map((url, idx) => {
+                          const isPrimary = (newProject.Img === url) || (!newProject.Img && idx === 0);
+                          return (
+                            <div key={`url-${idx}`} className={`relative group rounded-lg overflow-hidden border ${isPrimary ? "border-[#6366f1] ring-2 ring-[#6366f1]/50" : "border-white/15"} bg-black/40 aspect-video`}>
+                              <img src={url} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                              {isPrimary && (
+                                <span className="absolute top-1 left-1 bg-[#6366f1] text-[9px] text-white font-bold px-1.5 py-0.5 rounded shadow flex items-center gap-0.5">
+                                  <Check className="w-2.5 h-2.5" /> Cover
+                                </span>
+                              )}
+                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-1">
+                                {!isPrimary && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSetPrimaryImage(url)}
+                                    className="p-1 bg-[#6366f1] hover:bg-[#5558e6] text-white rounded text-[10px] font-medium transition-all"
+                                    title="Set as main cover"
+                                  >
+                                    Set Cover
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveExistingImage(url)}
+                                  className="p-1 bg-red-500/80 hover:bg-red-500 text-white rounded transition-all"
+                                  title="Remove image"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                        {/* Local Pending File Previews */}
+                        {projectFiles.map((file, idx) => (
+                          <div key={`file-${idx}`} className="relative group rounded-lg overflow-hidden border border-amber-500/40 bg-black/40 aspect-video">
+                            <img src={URL.createObjectURL(file)} alt={file.name} className="w-full h-full object-cover" />
+                            <span className="absolute bottom-1 left-1 right-1 bg-black/70 text-[9px] text-amber-300 font-medium px-1 py-0.5 rounded truncate">
+                              New: {file.name}
+                            </span>
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-1">
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveSelectedFile(idx)}
+                                className="p-1 bg-red-500/80 hover:bg-red-500 text-white rounded transition-all"
+                                title="Remove file"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -777,6 +997,20 @@ const Dashboard = () => {
                   className="w-full p-3 bg-white/10 rounded-xl border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-[#6366f1] focus:ring-2 focus:ring-[#6366f1]/40 transition-all h-20 text-xs"
                 />
               </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-300 mb-1 flex items-center justify-between">
+                  <span>Project Created Date</span>
+                  <span className="text-[10px] text-gray-400 font-normal">(Optional - defaults to today)</span>
+                </label>
+                <input
+                  type="date"
+                  value={newProject.createdAt}
+                  onChange={(e) => setNewProject({ ...newProject, createdAt: e.target.value })}
+                  className="w-full p-3 bg-white/10 rounded-xl border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-[#6366f1] focus:ring-2 focus:ring-[#6366f1]/40 transition-all text-xs"
+                />
+              </div>
+
               <button
                 type="submit"
                 disabled={isUploading}
@@ -828,15 +1062,29 @@ const Dashboard = () => {
                         className="flex items-center gap-3 flex-1 cursor-pointer min-w-0"
                       >
                         {p.Img && (
-                          <img
-                            src={p.Img}
-                            alt={p.Title}
-                            className="w-12 h-12 object-cover rounded-lg border border-white/10 shrink-0"
-                          />
+                          <div className="relative shrink-0">
+                            <img
+                              src={p.Img}
+                              alt={p.Title}
+                              className="w-12 h-12 object-cover rounded-lg border border-white/10"
+                            />
+                            {Array.isArray(p.Images) && p.Images.length > 1 && (
+                              <span className="absolute -bottom-1 -right-1 bg-[#6366f1] text-[9px] font-bold text-white px-1.5 py-0.2 rounded-full border border-black/50 shadow">
+                                {p.Images.length}
+                              </span>
+                            )}
+                          </div>
                         )}
                         <div className="min-w-0 flex-1">
                           <h3 className="font-bold text-base text-white truncate">{p.Title}</h3>
-                          <p className="text-gray-400 text-xs truncate">{p.Description}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-gray-400 text-xs truncate">{p.Description}</span>
+                            {parseProjectDate(p) > 0 && (
+                              <span className="text-[10px] text-indigo-400 font-medium shrink-0 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
+                                {new Date(parseProjectDate(p)).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
 
@@ -870,6 +1118,29 @@ const Dashboard = () => {
                     {/* Accordion Content Drawer */}
                     {isExpanded && (
                       <div className="px-5 pb-5 pt-3 border-t border-white/10 bg-white/[0.02] space-y-3.5 text-xs text-gray-300">
+                        {/* Project Gallery if multiple images */}
+                        {Array.isArray(p.Images) && p.Images.length > 0 && (
+                          <div>
+                            <span className="text-gray-400 font-semibold block mb-1.5">Project Photos ({p.Images.length}):</span>
+                            <div className="flex flex-wrap gap-2">
+                              {p.Images.map((imgUrl, i) => (
+                                <a 
+                                  key={i} 
+                                  href={imgUrl} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="relative group rounded-lg overflow-hidden border border-white/15 bg-black/40 w-20 h-14 shrink-0 block"
+                                >
+                                  <img src={imgUrl} alt={`Photo ${i + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                                  {p.Img === imgUrl && (
+                                    <span className="absolute top-0.5 left-0.5 bg-[#6366f1] text-[8px] text-white px-1 rounded font-bold">Cover</span>
+                                  )}
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
                         <div>
                           <span className="text-gray-400 font-semibold block mb-1">Full Description:</span>
                           <p className="leading-relaxed text-gray-200 bg-white/5 p-3 rounded-xl border border-white/5">

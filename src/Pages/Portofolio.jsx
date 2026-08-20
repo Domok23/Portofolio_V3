@@ -79,7 +79,7 @@ function TabPanel({ children, value, index, ...other }) {
     >
       {value === index && (
         <Box sx={{ p: { xs: 1, sm: 3 } }}>
-          <Typography>{children}</Typography>
+          {children}
         </Box>
       )}
     </div>
@@ -144,6 +144,33 @@ export default function FullWidthTabs() {
     return () => window.removeEventListener("switch-portfolio-tab", handleSwitchTab);
   }, []);
 
+  const parseProjectDate = (proj) => {
+    if (!proj) return 0;
+    if (proj.createdAt) {
+      if (typeof proj.createdAt.toDate === "function") return proj.createdAt.toDate().getTime();
+      if (proj.createdAt instanceof Date) return proj.createdAt.getTime();
+      const parsed = Date.parse(proj.createdAt);
+      if (!isNaN(parsed)) return parsed;
+      if (typeof proj.createdAt === "number") return proj.createdAt;
+    }
+    if (proj.Date || proj.date) {
+      const parsed = Date.parse(proj.Date || proj.date);
+      if (!isNaN(parsed)) return parsed;
+    }
+    return 0;
+  };
+
+  const sortProjectsDescending = (items) => {
+    return [...items].sort((a, b) => {
+      const timeA = parseProjectDate(a);
+      const timeB = parseProjectDate(b);
+      if (timeA && timeB) return timeB - timeA;
+      if (timeA && !timeB) return -1;
+      if (!timeA && timeB) return 1;
+      return (a.Title || "").localeCompare(b.Title || "");
+    });
+  };
+
   const parseCertificateDate = (cert) => {
     if (cert.Date) {
       const parsed = Date.parse(cert.Date.includes(" ") ? `1 ${cert.Date}` : cert.Date);
@@ -169,11 +196,13 @@ export default function FullWidthTabs() {
         getDocs(techCollection),
       ]);
 
-      const projectData = projectSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        TechStack: doc.data().TechStack || [],
-      }));
+      const projectData = sortProjectsDescending(
+        projectSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          TechStack: doc.data().TechStack || [],
+        }))
+      );
 
       const certificateData = certificateSnapshot.docs
         .map((doc) => ({ id: doc.id, ...doc.data() }))
@@ -334,11 +363,13 @@ export default function FullWidthTabs() {
                 {displayedProjects.map((project, index) => (
                   <div
                     key={project.id || index}
+                    className="h-full"
                     data-aos={index % 3 === 0 ? "fade-up-right" : index % 3 === 1 ? "fade-up" : "fade-up-left"}
                     data-aos-duration={index % 3 === 0 ? "1000" : index % 3 === 1 ? "1200" : "1000"}
                   >
                     <CardProject
                       Img={project.Img}
+                      Images={project.Images}
                       Title={project.Title}
                       Description={project.Description}
                       Link={project.Link}

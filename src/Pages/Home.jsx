@@ -176,10 +176,6 @@ const Home = () => {
     src: `${import.meta.env.BASE_URL}Coding.json`,
     loop: true,
     autoplay: true,
-    rendererSettings: {
-      preserveAspectRatio: 'xMidYMid slice',
-      progressiveLoad: true,
-    },
     style: { width: "100%", height: "100%" },
     className: `w-full h-full transition-all duration-500 ${
       isHovering 
